@@ -1,0 +1,37 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Harun1022
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    networks:
+      - surveyapp-network
+    volumes:
+      - sqldata:/var/opt/mssql
+
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: surveyapp-web
+    depends_on:
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SurveyAppDB;User Id=sa;Password=Harun1022;TrustServerCertificate=True;MultipleActiveResultSets=true
+    ports:
+      - "8080:8080"
+    networks:
+      - surveyapp-network
+
+networks:
+  surveyapp-network:
+    driver: bridge
+
+volumes:
+  sqldata:

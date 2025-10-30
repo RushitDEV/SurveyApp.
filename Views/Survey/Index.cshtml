@@ -11,7 +11,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <h2 class="mb-0 fw-bold">Anketlerim</h2>
                 <a asp-action="Create" class="btn btn-primary px-4">
-                    <i class="bi bi-plus-lg me-2"></i>Yeni Anket Olustur
+                    <i class="bi bi-plus-lg me-2"></i>Yeni Anket OluÅŸtur
                 </a>
             </div>
         </div>
@@ -28,21 +28,39 @@
                         <div class="card h-100 shadow-sm hover-card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <span class="badge bg-success">@(survey.IsActive ? "Aktif" : "Pasif")</span>
+                                    <span class="badge @(survey.IsActive ? "bg-success" : "bg-secondary")">
+                                        @(survey.IsActive ? "Aktif" : "Pasif")
+                                    </span>
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-link text-muted" data-bs-toggle="dropdown">
                                             <i class="bi bi-three-dots-vertical"></i>
                                         </button>
-                                        <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item" asp-action="Details" asp-route-id="@survey.Id">Görüntüle</a></li>
-                                            <li><a class="dropdown-item" href="#">Düzenle</a></li>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" asp-action="Details" asp-route-id="@survey.Id">
+                                                    <i class="bi bi-eye me-2"></i>GÃ¶rÃ¼ntÃ¼le
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" asp-action="Edit" asp-route-id="@survey.Id">
+                                                    <i class="bi bi-pencil me-2"></i>DÃ¼zenle
+                                                </a>
+                                            </li>
                                             <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="#">Sil</a></li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="#" onclick="deleteSurvey(@survey.Id, event)">
+                                                    <i class="bi bi-trash me-2"></i>Sil
+                                                </a>
+                                            </li>
                                         </ul>
                                     </div>
                                 </div>
-                                <h5 class="card-title fw-bold mb-2">@survey.Title</h5>
-                                <p class="card-text text-muted small">@survey.Description</p>
+                                <a asp-action="Details" asp-route-id="@survey.Id" class="text-decoration-none text-dark">
+                                    <h5 class="card-title fw-bold mb-2">@survey.Title</h5>
+                                    <p class="card-text text-muted small">
+                                        @(survey.Description?.Length > 100 ? survey.Description.Substring(0, 100) + "..." : survey.Description)
+                                    </p>
+                                </a>
                                 <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
                                     <small class="text-muted">
                                         <i class="bi bi-calendar3 me-1"></i>
@@ -50,7 +68,7 @@
                                     </small>
                                     <small class="text-muted">
                                         <i class="bi bi-question-circle me-1"></i>
-                                        0 Soru
+                                        @survey.Questions.Count Soru
                                     </small>
                                 </div>
                             </div>
@@ -62,23 +80,54 @@
         else
         {
             <div class="text-center py-5">
-                <img src="~/indir.jpg" alt="No surveys" class="mb-4">
-                <h4 class="text-muted">Henüz anket oluþturmadýnýz</h4>
-                <p class="text-muted">Hemen ilk anketinizi oluþturun ve yanýtlarý toplamaya baþlayýn</p>
-                <a asp-action="Create" class="btn btn-primary mt-3">
-                    <i class="bi bi-plus-lg me-2"></i>Yeni Anket Oluþtur
+                <div class="mb-4">
+                    <i class="bi bi-clipboard-data text-muted" style="font-size: 5rem;"></i>
+                </div>
+                <h4 class="text-muted">HenÃ¼z anket oluÅŸturmadÄ±nÄ±z</h4>
+                <p class="text-muted">Hemen ilk anketinizi oluÅŸturun ve yanÄ±tlarÄ± toplamaya baÅŸlayÄ±n</p>
+                <a asp-action="Create" class="btn btn-primary mt-3 px-4">
+                    <i class="bi bi-plus-lg me-2"></i>Yeni Anket OluÅŸtur
                 </a>
             </div>
         }
     </div>
 </div>
 
+<script>
+    function deleteSurvey(id, event) {
+        event.preventDefault();
+
+        if (confirm('Bu anketi silmek istediÄŸinizden emin misiniz? Bu iÅŸlem geri alÄ±namaz.')) {
+            fetch('/Survey/Delete/' + id, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Silme iÅŸlemi baÅŸarÄ±sÄ±z!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Bir hata oluÅŸtu!');
+            });
+        }
+    }
+</script>
+
 <style>
     .hover-card {
         transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
     }
-    .hover-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-    }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+        }
 </style>

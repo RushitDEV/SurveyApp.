@@ -8,50 +8,135 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #06b6d4;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
+
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1rem 0;
+        }
+
         .navbar-brand {
             font-weight: 700;
             font-size: 1.5rem;
-            color: #4f46e5 !important;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
+
+        .nav-link {
+            font-weight: 500;
+            color: #1f2937 !important;
+            transition: color 0.3s;
+            margin: 0 0.5rem;
+        }
+
+            .nav-link:hover {
+                color: var(--primary-color) !important;
+            }
+
+        .btn-primary-gradient {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+            .btn-primary-gradient:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+            }
     </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-clipboard-data me-2"></i>SurveyApp
+                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-clipboard-data me-2 fs-4"></i>
+                    SurveyApp
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto align-items-center">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Survey" asp-action="Index">Anketlerim</a>
+                            <a class="nav-link" href="#features">Özellikler</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#how-it-works">Nasıl Çalışır</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#pricing">Fiyatlandırma</a>
+                        </li>
+                        <li class="nav-item ms-3">
+                            <a class="btn btn-outline-primary px-4" asp-controller="Survey" asp-action="Index">
+                                Giriş Yap
+                            </a>
+                        </li>
+                        <li class="nav-item ms-2">
+                            <a class="btn btn-primary-gradient" asp-controller="Survey" asp-action="Create">
+                                Ücretsiz Başla
+                            </a>
                         </li>
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
-    <div>
+
+    <div style="margin-top: 80px;">
         <main role="main">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted bg-white mt-5">
-        <div class="container py-3">
-            &copy; 2025 - SurveyApp
+    <footer class="bg-dark text-white py-5 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-clipboard-data me-2"></i>SurveyApp
+                    </h5>
+                    <p class="text-white-50">Profesyonel anketler oluşturun, yanıtları analiz edin ve işinizi büyütün.</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h6 class="fw-bold mb-3">Hızlı Linkler</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Hakkımızda</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Blog</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Destek</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h6 class="fw-bold mb-3">İletişim</h6>
+                    <p class="text-white-50 mb-2"><i class="bi bi-envelope me-2"></i>info@surveyapp.com</p>
+                    <p class="text-white-50"><i class="bi bi-telephone me-2"></i>+90 555 123 45 67</p>
+                </div>
+            </div>
+            <hr class="border-white-50">
+            <div class="text-center text-white-50">
+                <p class="mb-0">&copy; 2025 SurveyApp. Tüm hakları saklıdır.</p>
+            </div>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

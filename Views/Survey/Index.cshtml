@@ -1,133 +1,147 @@
-@model IEnumerable<SurveyApp.Models.Survey>
-
 @{
-    ViewData["Title"] = "Anketlerim";
+    ViewData["Title"] = "Ana Sayfa";
 }
 
-<div class="container-fluid p-0">
-    <!-- Header -->
-    <div class="bg-white border-bottom">
-        <div class="container py-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2 class="mb-0 fw-bold">Anketlerim</h2>
-                <a asp-action="Create" class="btn btn-primary px-4">
-                    <i class="bi bi-plus-lg me-2"></i>Yeni Anket Oluştur
-                </a>
+<!-- Hero Section -->
+<section class="hero-section py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 600px;">
+    <div class="container">
+        <div class="row align-items-center" style="min-height: 500px;">
+            <div class="col-lg-6 text-white">
+                <h1 class="display-3 fw-bold mb-4" data-aos="fade-up">
+                    Anket Oluşturma Artık Çok Kolay
+                </h1>
+                <p class="lead mb-4" data-aos="fade-up" data-aos-delay="100">
+                    Dakikalar içinde profesyonel anketler oluşturun, müşterilerinizden geri bildirim alın ve veriye dayalı kararlar verin.
+                </p>
+                <div class="d-flex gap-3" data-aos="fade-up" data-aos-delay="200">
+                    <a href="/Create" class="btn btn-light btn-lg px-5 shadow">
+                        <i class="bi bi-plus-circle me-2"></i>Ücretsiz Başla
+                    </a>
+                    <a href="#how-it-works" class="btn btn-outline-light btn-lg px-5">
+                        Nasıl Çalışır?
+                    </a>
+                </div>
+                <div class="mt-5">
+                    <div class="d-flex gap-4 text-white">
+                        <div>
+                            <h3 class="fw-bold mb-0">10K+</h3>
+                            <small class="opacity-75">Kullanıcı</small>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-0">50K+</h3>
+                            <small class="opacity-75">Anket</small>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-0">1M+</h3>
+                            <small class="opacity-75">Yanıt</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <img src="https://via.placeholder.com/600x400/667eea/ffffff?text=Survey+Dashboard"
+                     alt="Dashboard" class="img-fluid rounded-4 shadow-lg" data-aos="fade-left">
             </div>
         </div>
     </div>
-    
-    <!-- Survey Grid -->
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-5 bg-light">
     <div class="container py-5">
-        @if (Model.Any())
-        {
-            <div class="row g-4">
-                @foreach (var survey in Model)
-                {
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card h-100 shadow-sm hover-card">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <span class="badge @(survey.IsActive ? "bg-success" : "bg-secondary")">
-                                        @(survey.IsActive ? "Aktif" : "Pasif")
-                                    </span>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-link text-muted" data-bs-toggle="dropdown">
-                                            <i class="bi bi-three-dots-vertical"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <a class="dropdown-item" asp-action="Details" asp-route-id="@survey.Id">
-                                                    <i class="bi bi-eye me-2"></i>Görüntüle
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" asp-action="Edit" asp-route-id="@survey.Id">
-                                                    <i class="bi bi-pencil me-2"></i>Düzenle
-                                                </a>
-                                            </li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <a class="dropdown-item text-danger" href="#" onclick="deleteSurvey(@survey.Id, event)">
-                                                    <i class="bi bi-trash me-2"></i>Sil
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <a asp-action="Details" asp-route-id="@survey.Id" class="text-decoration-none text-dark">
-                                    <h5 class="card-title fw-bold mb-2">@survey.Title</h5>
-                                    <p class="card-text text-muted small">
-                                        @(survey.Description?.Length > 100 ? survey.Description.Substring(0, 100) + "..." : survey.Description)
-                                    </p>
-                                </a>
-                                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                                    <small class="text-muted">
-                                        <i class="bi bi-calendar3 me-1"></i>
-                                        @survey.CreatedDate.ToString("dd MMM yyyy")
-                                    </small>
-                                    <small class="text-muted">
-                                        <i class="bi bi-question-circle me-1"></i>
-                                        @survey.Questions.Count Soru
-                                    </small>
-                                </div>
-                            </div>
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Güçlü Özellikler</h2>
+            <p class="lead text-muted">İhtiyacınız olan her şey burada</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 hover-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-primary bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-lightning-charge fs-2"></i>
                         </div>
+                        <h4 class="fw-bold mb-3">Hızlı Oluşturma</h4>
+                        <p class="text-muted">Sürükle-bırak arayüzü ile dakikalar içinde anket oluşturun.</p>
                     </div>
-                }
-            </div>
-        }
-        else
-        {
-            <div class="text-center py-5">
-                <div class="mb-4">
-                    <i class="bi bi-clipboard-data text-muted" style="font-size: 5rem;"></i>
                 </div>
-                <h4 class="text-muted">Henüz anket oluşturmadınız</h4>
-                <p class="text-muted">Hemen ilk anketinizi oluşturun ve yanıtları toplamaya başlayın</p>
-                <a asp-action="Create" class="btn btn-primary mt-3 px-4">
-                    <i class="bi bi-plus-lg me-2"></i>Yeni Anket Oluştur
-                </a>
             </div>
-        }
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 hover-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-success bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-graph-up fs-2"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Gerçek Zamanlı Analiz</h4>
+                        <p class="text-muted">Yanıtları anında görüntüleyin ve detaylı raporlar alın.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 hover-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-info bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-share fs-2"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Kolay Paylaşım</h4>
+                        <p class="text-muted">Anketlerinizi link ile kolayca paylaşın ve yanıt toplayın.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+</section>
 
-<script>
-    function deleteSurvey(id, event) {
-        event.preventDefault();
+<!-- How It Works -->
+<section id="how-it-works" class="py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Nasıl Çalışır?</h2>
+            <p class="lead text-muted">3 basit adımda anket oluşturun</p>
+        </div>
+        <div class="row g-5">
+            <div class="col-md-4 text-center">
+                <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 100px; height: 100px; font-size: 2rem; font-weight: bold;">
+                    1
+                </div>
+                <h4 class="fw-bold mb-3">Anket Oluştur</h4>
+                <p class="text-muted">Sorularınızı ekleyin, soru tiplerini seçin ve anketinizi özelleştirin.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="step-number bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 100px; height: 100px; font-size: 2rem; font-weight: bold;">
+                    2
+                </div>
+                <h4 class="fw-bold mb-3">Paylaş</h4>
+                <p class="text-muted">Anket linkinizi müşterileriniz, takipçileriniz veya hedef kitlenizle paylaşın.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="step-number bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 100px; height: 100px; font-size: 2rem; font-weight: bold;">
+                    3
+                </div>
+                <h4 class="fw-bold mb-3">Analiz Et</h4>
+                <p class="text-muted">Yanıtları gerçek zamanlı olarak görüntüleyin ve detaylı raporlar alın.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-        if (confirm('Bu anketi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
-            fetch('/Survey/Delete/' + id, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('Silme işlemi başarısız!');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Bir hata oluştu!');
-            });
-        }
-    }
-</script>
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container py-5 text-center">
+        <h2 class="display-4 fw-bold mb-4">Hemen Başlayın!</h2>
+        <p class="lead mb-4">Ücretsiz hesap oluşturun ve ilk anketinizi dakikalar içinde oluşturun.</p>
+        <a href="/Create" class="btn btn-light btn-lg px-5 shadow">
+            <i class="bi bi-rocket-takeoff me-2"></i>Ücretsiz Dene
+        </a>
+    </div>
+</section>
 
 <style>
     .hover-card {
-        transition: transform 0.2s, box-shadow 0.2s;
-        cursor: pointer;
+        transition: transform 0.3s, box-shadow 0.3s;
     }
 
         .hover-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
         }
 </style>

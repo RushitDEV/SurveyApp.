@@ -13,7 +13,7 @@
                 <p class="lead mb-4" data-aos="fade-up" data-aos-delay="100">
                     Dakikalar içinde profesyonel anketler oluşturun, müşterilerinizden geri bildirim alın ve veriye dayalı kararlar verin.
                 </p>
-                <div class="d-flex gap-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="d-flex gap-3 flex-wrap" data-aos="fade-up" data-aos-delay="200">
                     <a asp-controller="Survey" asp-action="Create" class="btn btn-light btn-lg px-5 shadow">
                         <i class="bi bi-plus-circle me-2"></i>Ücretsiz Başla
                     </a>
@@ -22,7 +22,7 @@
                     </a>
                 </div>
                 <div class="mt-5">
-                    <div class="d-flex gap-4 text-white">
+                    <div class="d-flex gap-4 text-white flex-wrap">
                         <div>
                             <h3 class="fw-bold mb-0">10K+</h3>
                             <small class="opacity-75">Kullanıcı</small>
@@ -38,9 +38,57 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg-6 mt-5 mt-lg-0">
                 <img src="https://via.placeholder.com/600x400/667eea/ffffff?text=Survey+Dashboard"
                      alt="Dashboard" class="img-fluid rounded-4 shadow-lg" data-aos="fade-left">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Question Types Showcase -->
+<section class="py-5 bg-white">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">10+ Soru Tipi</h2>
+            <p class="lead text-muted">İhtiyacınıza uygun her türlü soru tipini kullanın</p>
+        </div>
+        <div class="row g-3">
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card border-0 bg-light text-center p-3 h-100">
+                    <i class="bi bi-circle text-primary fs-2 mb-2"></i>
+                    <small class="fw-bold">Tek Seçmeli</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card border-0 bg-light text-center p-3 h-100">
+                    <i class="bi bi-check-square text-success fs-2 mb-2"></i>
+                    <small class="fw-bold">Çok Seçmeli</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card border-0 bg-light text-center p-3 h-100">
+                    <i class="bi bi-text-left text-info fs-2 mb-2"></i>
+                    <small class="fw-bold">Açık Uçlu</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card border-0 bg-light text-center p-3 h-100">
+                    <i class="bi bi-image text-warning fs-2 mb-2"></i>
+                    <small class="fw-bold">Resim</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card border-0 bg-light text-center p-3 h-100">
+                    <i class="bi bi-star-fill text-warning fs-2 mb-2"></i>
+                    <small class="fw-bold">Derecelendirme</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card border-0 bg-light text-center p-3 h-100">
+                    <i class="bi bi-calendar text-danger fs-2 mb-2"></i>
+                    <small class="fw-bold">Tarih</small>
+                </div>
             </div>
         </div>
     </div>
@@ -87,12 +135,45 @@
                     </div>
                 </div>
             </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 hover-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-warning bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-file-earmark-arrow-up fs-2"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Dosya Yükleme</h4>
+                        <p class="text-muted">Kullanıcılardan resim ve dosya toplayın.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 hover-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-danger bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-phone fs-2"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Mobil Uyumlu</h4>
+                        <p class="text-muted">Tüm cihazlarda mükemmel çalışan responsive tasarım.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 hover-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-dark bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-shield-check fs-2"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Güvenli</h4>
+                        <p class="text-muted">Verileriniz güvende ve gizli tutulur.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
 <!-- How It Works -->
-<section id="how-it-works" class="py-5">
+<section id="how-it-works" class="py-5 bg-white">
     <div class="container py-5">
         <div class="text-center mb-5">
             <h2 class="display-5 fw-bold mb-3">Nasıl Çalışır?</h2>
@@ -129,9 +210,14 @@
     <div class="container py-5 text-center">
         <h2 class="display-4 fw-bold mb-4">Hemen Başlayın!</h2>
         <p class="lead mb-4">Ücretsiz hesap oluşturun ve ilk anketinizi dakikalar içinde oluşturun.</p>
-        <a asp-controller="Survey" asp-action="Create" class="btn btn-light btn-lg px-5 shadow">
-            <i class="bi bi-rocket-takeoff me-2"></i>Ücretsiz Dene
-        </a>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a asp-controller="Survey" asp-action="Create" class="btn btn-light btn-lg px-5 shadow">
+                <i class="bi bi-rocket-takeoff me-2"></i>Ücretsiz Dene
+            </a>
+            <a asp-controller="Survey" asp-action="Index" class="btn btn-outline-light btn-lg px-5">
+                <i class="bi bi-list-ul me-2"></i>Anketleri Gör
+            </a>
+        </div>
     </div>
 </section>
 

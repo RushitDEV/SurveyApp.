@@ -1,0 +1,444 @@
+﻿@model SurveyApp.Models.Survey
+
+@{
+    ViewData["Title"] = Model.Title;
+    var expired = ViewBag.Expired as bool? ?? false;
+}
+
+<div class="container-fluid p-0 bg-light min-vh-100">
+    <!-- Header -->
+    <div class="bg-primary text-white py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <h1 class="display-4 fw-bold mb-3">@Model.Title</h1>
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <p class="lead">@Model.Description</p>
+                    }
+                    @if (Model.EndDate.HasValue)
+                    {
+                        <p class="small">
+                            <i class="bi bi-clock me-1"></i>
+                            Bitiş Tarihi: @Model.EndDate.Value.ToString("dd MMMM yyyy")
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                @if (expired)
+                {
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center py-5">
+                            <i class="bi bi-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+                            <h3 class="mt-4">Anket Süresi Dolmuş</h3>
+                            <p class="text-muted">Bu anketin süresi @Model.EndDate.Value.ToString("dd MMMM yyyy") tarihinde sona ermiştir.</p>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <form id="surveyForm">
+                                @for (int i = 0; i < Model.Questions.Count; i++)
+                                {
+                                    var question = Model.Questions[i];
+                                    <div class="question-item mb-4 pb-4 @(i < Model.Questions.Count - 1 ? "border-bottom" : "")" data-question-id="@question.Id">
+                                        <div class="d-flex align-items-start mb-3">
+                                            <span class="badge bg-primary me-2">@(i + 1)</span>
+                                            <h5 class="mb-0">@question.QuestionText</h5>
+                                        </div>
+
+                                        @switch (question.Type)
+                                        {
+                                            case QuestionType.SingleChoice:
+                                                <div class="ms-4">
+                                                    @foreach (var option in question.Options)
+                                                    {
+                                                        <div class="form-check mb-2">
+                                                            <input class="form-check-input" type="radio"
+                                                                   name="question_@question.Id"
+                                                                   value="@option.Id"
+                                                                   id="option_@option.Id">
+                                                            <label class="form-check-label" for="option_@option.Id">
+                                                                @option.OptionText
+                                                            </label>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                break;
+
+                                            case QuestionType.MultipleChoice:
+                                                <div class="ms-4">
+                                                    @foreach (var option in question.Options)
+                                                    {
+                                                        <div class="form-check mb-2">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                   name="question_@question.Id"
+                                                                   value="@option.Id"
+                                                                   id="option_@option.Id">
+                                                            <label class="form-check-label" for="option_@option.Id">
+                                                                @option.OptionText
+                                                            </label>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                break;
+
+                                            case QuestionType.OpenEnded:
+                                                <textarea class="form-control" rows="4"
+                                          placeholder="Cevabınızı buraya yazın..."
+                                          data-question-id="@question.Id"></textarea>
+                                                break;
+
+                                            case QuestionType.ShortText:
+                                                <input type="text" class="form-control"
+                                                       placeholder="Cevabınızı yazın..."
+                                                       data-question-id="@question.Id">
+                                                break;
+
+                                            case QuestionType.Number:
+                                                <input type="number" class="form-control"
+                                                       placeholder="Sayı girin..."
+                                                       data-question-id="@question.Id">
+                                                break;
+
+                                            case QuestionType.DatePicker:
+                                                <input type="date" class="form-control"
+                                                       data-question-id="@question.Id">
+                                                break;
+
+                                            case QuestionType.Rating5:
+                                                <div class="rating-container" data-question-id="@question.Id" data-max-rating="5">
+                                                    @for (int star = 1; star <= 5; star++)
+                                                    {
+                                                        <i class="bi bi-star rating-star" data-rating="@star"></i>
+                                                    }
+                                                    <input type="hidden" class="rating-value" value="0">
+                                                </div>
+                                                break;
+
+                                            case QuestionType.Rating10:
+                                                <div class="d-flex align-items-center">
+                                                    <span class="me-2">1</span>
+                                                    <input type="range" class="form-range flex-grow-1"
+                                                           min="1" max="10" value="5"
+                                                           data-question-id="@question.Id"
+                                                           oninput="this.nextElementSibling.textContent = this.value">
+                                                    <output class="ms-2 fw-bold">5</output>
+                                                    <span class="ms-2">10</span>
+                                                </div>
+                                                break;
+
+                                            case QuestionType.ImageUpload:
+                                                <div class="upload-area" data-question-id="@question.Id" data-upload-type="image">
+                                                    <input type="file" class="form-control" accept="image/*"
+                                                           data-question-id="@question.Id"
+                                                           onchange="handleFileUpload(this, @question.Id)">
+                                                    <div class="preview-area mt-2"></div>
+                                                </div>
+                                                break;
+
+                                            case QuestionType.FileUpload:
+                                                <div class="upload-area" data-question-id="@question.Id" data-upload-type="file">
+                                                    <input type="file" class="form-control"
+                                                           accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
+                                                           data-question-id="@question.Id"
+                                                           onchange="handleFileUpload(this, @question.Id)">
+                                                    <div class="preview-area mt-2"></div>
+                                                </div>
+                                                break;
+                                        }
+                                    </div>
+                                }
+
+                                <div class="text-center mt-4 pt-4 border-top">
+                                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                                        <i class="bi bi-send me-2"></i>Gönder
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Yıldız derecelendirme
+    document.querySelectorAll('.rating-star').forEach(star => {
+        star.addEventListener('click', function() {
+            const container = this.closest('.rating-container');
+            const rating = parseInt(this.dataset.rating);
+            const hiddenInput = container.querySelector('.rating-value');
+
+            hiddenInput.value = rating;
+
+            // Yıldızları güncelle
+            container.querySelectorAll('.rating-star').forEach((s, index) => {
+                if (index < rating) {
+                    s.classList.remove('bi-star');
+                    s.classList.add('bi-star-fill', 'text-warning');
+                } else {
+                    s.classList.remove('bi-star-fill', 'text-warning');
+                    s.classList.add('bi-star');
+                }
+            });
+        });
+
+        // Hover efekti
+        star.addEventListener('mouseenter', function() {
+            const container = this.closest('.rating-container');
+            const rating = parseInt(this.dataset.rating);
+
+            container.querySelectorAll('.rating-star').forEach((s, index) => {
+                if (index < rating) {
+                    s.classList.add('text-warning');
+                }
+            });
+        });
+
+        star.addEventListener('mouseleave', function() {
+            const container = this.closest('.rating-container');
+            const currentRating = parseInt(container.querySelector('.rating-value').value);
+
+            container.querySelectorAll('.rating-star').forEach((s, index) => {
+                if (index >= currentRating) {
+                    s.classList.remove('text-warning');
+                }
+            });
+        });
+    });
+
+    // Dosya yükleme
+    let uploadedFiles = {};
+
+    async function handleFileUpload(input, questionId) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const previewArea = input.closest('.upload-area').querySelector('.preview-area');
+        previewArea.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> Yükleniyor...';
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('questionId', questionId);
+
+        try {
+            const response = await fetch('/Response/UploadFile', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                uploadedFiles[questionId] = result.fileName;
+
+                // Önizleme göster
+                if (file.type.startsWith('image/')) {
+                    previewArea.innerHTML = `
+                        <div class="mt-2">
+                            <img src="${result.filePath}" class="img-thumbnail" style="max-height: 200px;">
+                            <p class="small text-success mt-1">
+                                <i class="bi bi-check-circle"></i> ${file.name} yüklendi
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    previewArea.innerHTML = `
+                        <p class="small text-success">
+                            <i class="bi bi-check-circle"></i> ${file.name} yüklendi
+                        </p>
+                    `;
+                }
+            } else {
+                previewArea.innerHTML = `<p class="small text-danger">${result.message}</p>`;
+            }
+        } catch (error) {
+            previewArea.innerHTML = '<p class="small text-danger">Yükleme hatası</p>';
+        }
+    }
+
+    // Form gönderimi
+    document.getElementById('surveyForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const answers = [];
+
+        // Tüm soruları topla
+        document.querySelectorAll('.question-item').forEach(questionDiv => {
+            const questionId = parseInt(questionDiv.dataset.questionId);
+
+            // Radio butonlar (Tek seçmeli)
+            const radioInput = questionDiv.querySelector(`input[type="radio"][name="question_${questionId}"]:checked`);
+            if (radioInput) {
+                answers.push({
+                    questionId: questionId,
+                    optionId: parseInt(radioInput.value)
+                });
+                return;
+            }
+
+            // Checkbox'lar (Çok seçmeli)
+            const checkboxes = questionDiv.querySelectorAll(`input[type="checkbox"][name="question_${questionId}"]:checked`);
+            if (checkboxes.length > 0) {
+                const optionIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+                answers.push({
+                    questionId: questionId,
+                    optionIds: optionIds
+                });
+                return;
+            }
+
+            // Textarea (Açık uçlu)
+            const textarea = questionDiv.querySelector('textarea');
+            if (textarea) {
+                answers.push({
+                    questionId: questionId,
+                    answerText: textarea.value
+                });
+                return;
+            }
+
+            // Text input (Kısa metin)
+            const textInput = questionDiv.querySelector(`input[type="text"][data-question-id="${questionId}"]`);
+            if (textInput) {
+                answers.push({
+                    questionId: questionId,
+                    answerText: textInput.value
+                });
+                return;
+            }
+
+            // Number input
+            const numberInput = questionDiv.querySelector(`input[type="number"][data-question-id="${questionId}"]`);
+            if (numberInput) {
+                answers.push({
+                    questionId: questionId,
+                    numberValue: parseInt(numberInput.value)
+                });
+                return;
+            }
+
+            // Date input
+            const dateInput = questionDiv.querySelector(`input[type="date"][data-question-id="${questionId}"]`);
+            if (dateInput && dateInput.value) {
+                answers.push({
+                    questionId: questionId,
+                    dateValue: dateInput.value
+                });
+                return;
+            }
+
+            // Rating (Yıldız)
+            const ratingContainer = questionDiv.querySelector(`.rating-container[data-question-id="${questionId}"]`);
+            if (ratingContainer) {
+                const ratingValue = parseInt(ratingContainer.querySelector('.rating-value').value);
+                if (ratingValue > 0) {
+                    answers.push({
+                        questionId: questionId,
+                        ratingValue: ratingValue
+                    });
+                }
+                return;
+            }
+
+            // Rating (Slider)
+            const rangeInput = questionDiv.querySelector(`input[type="range"][data-question-id="${questionId}"]`);
+            if (rangeInput) {
+                answers.push({
+                    questionId: questionId,
+                    ratingValue: parseInt(rangeInput.value)
+                });
+                return;
+            }
+
+            // File upload
+            if (uploadedFiles[questionId]) {
+                answers.push({
+                    questionId: questionId,
+                    fileName: uploadedFiles[questionId]
+                });
+            }
+        });
+
+        // Gönder
+        try {
+            const response = await fetch('/Response/SubmitResponse', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    surveyId: @Model.Id,
+                    answers: answers
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                window.location.href = '/Response/ThankYou';
+            } else {
+                alert('Hata: ' + result.message);
+            }
+        } catch (error) {
+            alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+        }
+    });
+</script>
+
+<style>
+    .rating-star {
+        font-size: 2rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #ddd;
+    }
+
+        .rating-star:hover {
+            transform: scale(1.2);
+        }
+
+        .rating-star.text-warning {
+            color: #ffc107 !important;
+        }
+
+    .question-item {
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .upload-area {
+        padding: 1rem;
+        border: 2px dashed #dee2e6;
+        border-radius: 0.5rem;
+        transition: all 0.3s;
+    }
+
+        .upload-area:hover {
+            border-color: #0d6efd;
+            background-color: #f8f9fa;
+        }
+</style>

@@ -12,8 +12,8 @@ using SurveyApp.Data;
 namespace SurveyApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251030231347_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251102141440_AddNewQuestionTypes")]
+    partial class AddNewQuestionTypes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -39,17 +39,28 @@ namespace SurveyApp.Migrations
                     b.Property<string>("AnswerText")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FilePath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("OptionId")
                         .HasColumnType("int");
 
                     b.Property<int>("QuestionId")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserIp")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("RatingValue")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ResponseId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OptionId");
+
+                    b.HasIndex("QuestionId");
+
+                    b.HasIndex("ResponseId");
 
                     b.ToTable("Answers");
                 });
@@ -104,6 +115,31 @@ namespace SurveyApp.Migrations
                     b.ToTable("Questions");
                 });
 
+            modelBuilder.Entity("SurveyApp.Models.Response", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CompletedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("SurveyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserIp")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SurveyId");
+
+                    b.ToTable("Responses");
+                });
+
             modelBuilder.Entity("SurveyApp.Models.Survey", b =>
                 {
                     b.Property<int>("Id")
@@ -134,6 +170,31 @@ namespace SurveyApp.Migrations
                     b.ToTable("Surveys");
                 });
 
+            modelBuilder.Entity("SurveyApp.Models.Answer", b =>
+                {
+                    b.HasOne("SurveyApp.Models.Option", "Option")
+                        .WithMany()
+                        .HasForeignKey("OptionId");
+
+                    b.HasOne("SurveyApp.Models.Question", "Question")
+                        .WithMany()
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SurveyApp.Models.Response", "Response")
+                        .WithMany("Answers")
+                        .HasForeignKey("ResponseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Option");
+
+                    b.Navigation("Question");
+
+                    b.Navigation("Response");
+                });
+
             modelBuilder.Entity("SurveyApp.Models.Option", b =>
                 {
                     b.HasOne("SurveyApp.Models.Question", "Question")
@@ -156,9 +217,25 @@ namespace SurveyApp.Migrations
                     b.Navigation("Survey");
                 });
 
+            modelBuilder.Entity("SurveyApp.Models.Response", b =>
+                {
+                    b.HasOne("SurveyApp.Models.Survey", "Survey")
+                        .WithMany()
+                        .HasForeignKey("SurveyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Survey");
+                });
+
             modelBuilder.Entity("SurveyApp.Models.Question", b =>
                 {
                     b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("SurveyApp.Models.Response", b =>
+                {
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("SurveyApp.Models.Survey", b =>

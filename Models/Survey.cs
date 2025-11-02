@@ -1,4 +1,4 @@
-namespace SurveyApp.Models
+﻿namespace SurveyApp.Models
 {
     public class Survey
     {
@@ -8,6 +8,9 @@ namespace SurveyApp.Models
         public DateTime CreatedDate { get; set; }
         public DateTime? EndDate { get; set; }
         public bool IsActive { get; set; }
+
+        // İlişkiler
         public List<Question> Questions { get; set; } = new List<Question>();
+        public List<Response> Responses { get; set; } = new List<Response>(); // 🔥 Bu satır eklendi
     }
 }

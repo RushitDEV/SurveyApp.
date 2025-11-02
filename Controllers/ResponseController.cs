@@ -37,7 +37,7 @@ namespace SurveyApp.Controllers
             return View(survey);
         }
 
-        // Cevapları kaydet
+        // Cevapları kaydet - DÜZELTİLMİŞ
         [HttpPost]
         public async Task<IActionResult> SubmitResponse([FromBody] SubmitResponseModel model)
         {
@@ -56,92 +56,140 @@ namespace SurveyApp.Controllers
                 // IP adresini al
                 var userIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
 
-                // Response oluştur
+                // Response oluştur - ÖNCE KAYDET
                 var response = new Response
                 {
                     SurveyId = model.SurveyId,
                     UserIp = userIp,
-                    CompletedDate = DateTime.Now,
-                    Answers = new List<Answer>()
+                    CompletedDate = DateTime.Now
                 };
 
-                // Cevapları kaydet
+                _context.Responses.Add(response);
+                await _context.SaveChangesAsync(); // ÖNCE Response'u kaydet ki ID alabilelim
+
+                // Şimdi Answers'ı ekle
                 foreach (var answerModel in model.Answers)
                 {
                     var question = survey.Questions.FirstOrDefault(q => q.Id == answerModel.QuestionId);
                     if (question == null) continue;
 
-                    var answer = new Answer
-                    {
-                        QuestionId = answerModel.QuestionId,
-                        AnswerDate = DateTime.Now
-                    };
-
                     // Soru tipine göre cevabı kaydet
                     switch (question.Type)
                     {
                         case QuestionType.SingleChoice:
-                            answer.OptionId = answerModel.OptionId;
+                            if (answerModel.OptionId.HasValue)
+                            {
+                                var answer = new Answer
+                                {
+                                    ResponseId = response.Id, // Artık ID var
+                                    QuestionId = answerModel.QuestionId,
+                                    OptionId = answerModel.OptionId,
+                                    AnswerDate = DateTime.Now
+                                };
+                                _context.Answers.Add(answer);
+                            }
                             break;
 
                         case QuestionType.MultipleChoice:
-                            // Çoklu seçim için her seçenek ayrı answer olarak kaydedilir
-                            if (answerModel.OptionIds != null)
+                            // Çoklu seçim için her seçenek ayrı answer
+                            if (answerModel.OptionIds != null && answerModel.OptionIds.Any())
                             {
                                 foreach (var optionId in answerModel.OptionIds)
                                 {
-                                    response.Answers.Add(new Answer
+                                    var answer = new Answer
                                     {
+                                        ResponseId = response.Id,
                                         QuestionId = answerModel.QuestionId,
                                         OptionId = optionId,
                                         AnswerDate = DateTime.Now
-                                    });
+                                    };
+                                    _context.Answers.Add(answer);
                                 }
                             }
-                            continue; // foreach döngüsünün sonuna geç
+                            break;
 
                         case QuestionType.OpenEnded:
                         case QuestionType.ShortText:
-                            answer.AnswerText = answerModel.AnswerText;
+                            if (!string.IsNullOrEmpty(answerModel.AnswerText))
+                            {
+                                var answer = new Answer
+                                {
+                                    ResponseId = response.Id,
+                                    QuestionId = answerModel.QuestionId,
+                                    AnswerText = answerModel.AnswerText,
+                                    AnswerDate = DateTime.Now
+                                };
+                                _context.Answers.Add(answer);
+                            }
                             break;
 
                         case QuestionType.Number:
-                            answer.AnswerText = answerModel.NumberValue?.ToString();
+                            if (answerModel.NumberValue.HasValue)
+                            {
+                                var answer = new Answer
+                                {
+                                    ResponseId = response.Id,
+                                    QuestionId = answerModel.QuestionId,
+                                    AnswerText = answerModel.NumberValue.ToString(),
+                                    AnswerDate = DateTime.Now
+                                };
+                                _context.Answers.Add(answer);
+                            }
                             break;
 
                         case QuestionType.DatePicker:
-                            answer.AnswerText = answerModel.DateValue?.ToString("yyyy-MM-dd");
+                            if (answerModel.DateValue.HasValue)
+                            {
+                                var answer = new Answer
+                                {
+                                    ResponseId = response.Id,
+                                    QuestionId = answerModel.QuestionId,
+                                    AnswerText = answerModel.DateValue.Value.ToString("yyyy-MM-dd"),
+                                    AnswerDate = DateTime.Now
+                                };
+                                _context.Answers.Add(answer);
+                            }
                             break;
 
                         case QuestionType.Rating5:
                         case QuestionType.Rating10:
-                            answer.RatingValue = answerModel.RatingValue;
+                            if (answerModel.RatingValue.HasValue)
+                            {
+                                var answer = new Answer
+                                {
+                                    ResponseId = response.Id,
+                                    QuestionId = answerModel.QuestionId,
+                                    RatingValue = answerModel.RatingValue,
+                                    AnswerDate = DateTime.Now
+                                };
+                                _context.Answers.Add(answer);
+                            }
                             break;
 
                         case QuestionType.ImageUpload:
                         case QuestionType.FileUpload:
-                            // Dosya yükleme işlemi ayrı yapılacak
                             if (!string.IsNullOrEmpty(answerModel.FileName))
                             {
-                                answer.FilePath = answerModel.FileName;
+                                var answer = new Answer
+                                {
+                                    ResponseId = response.Id,
+                                    QuestionId = answerModel.QuestionId,
+                                    FilePath = answerModel.FileName,
+                                    AnswerDate = DateTime.Now
+                                };
+                                _context.Answers.Add(answer);
                             }
                             break;
                     }
-
-                    if (question.Type != QuestionType.MultipleChoice)
-                    {
-                        response.Answers.Add(answer);
-                    }
                 }
 
-                _context.Responses.Add(response);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(); // Tüm Answers'ı kaydet
 
                 return Json(new { success = true, message = "Cevaplarınız kaydedildi. Teşekkürler!" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Bir hata oluştu: " + ex.Message });
+                return Json(new { success = false, message = "Bir hata oluştu: " + ex.Message + " | " + ex.InnerException?.Message });
             }
         }
 

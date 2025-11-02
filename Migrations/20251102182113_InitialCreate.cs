@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SurveyApp.Migrations
 {
     /// <inheritdoc />
-    public partial class AddNewQuestionTypes : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -103,7 +103,8 @@ namespace SurveyApp.Migrations
                     AnswerText = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FilePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RatingValue = table.Column<int>(type: "int", nullable: true),
-                    AnswerDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    AnswerDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    QuestionId1 = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -117,6 +118,11 @@ namespace SurveyApp.Migrations
                         name: "FK_Answers_Questions_QuestionId",
                         column: x => x.QuestionId,
                         principalTable: "Questions",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Answers_Questions_QuestionId1",
+                        column: x => x.QuestionId1,
+                        principalTable: "Questions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -124,7 +130,7 @@ namespace SurveyApp.Migrations
                         column: x => x.ResponseId,
                         principalTable: "Responses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -136,6 +142,11 @@ namespace SurveyApp.Migrations
                 name: "IX_Answers_QuestionId",
                 table: "Answers",
                 column: "QuestionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Answers_QuestionId1",
+                table: "Answers",
+                column: "QuestionId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Answers_ResponseId",

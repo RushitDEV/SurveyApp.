@@ -9,5 +9,7 @@ namespace SurveyApp.Models
         public int Order { get; set; }
         public Survey Survey { get; set; }
         public List<Option> Options { get; set; } = new List<Option>();
+        public List<Answer> Answers { get; set; } = new List<Answer>();
+
     }
 }

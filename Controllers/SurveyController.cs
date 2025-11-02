@@ -76,7 +76,7 @@ namespace SurveyApp.Controllers
             return Json(new { success = true, surveyId = survey.Id });
         }
 
-        // Anket detaylarý
+        // Anket detaylarý - YANIT ÝSTATÝSTÝKLERÝYLE
         public async Task<IActionResult> Details(int id)
         {
             var survey = await _context.Surveys
@@ -86,6 +86,19 @@ namespace SurveyApp.Controllers
 
             if (survey == null)
                 return NotFound();
+
+            // Yanýtlarý yükle
+            var responses = await _context.Responses
+                .Include(r => r.Answers)
+                    .ThenInclude(a => a.Question)
+                .Include(r => r.Answers)
+                    .ThenInclude(a => a.Option)
+                .Where(r => r.SurveyId == id)
+                .ToListAsync();
+
+            // ViewBag ile gönder
+            ViewBag.Responses = responses;
+            ViewBag.ResponseCount = responses.Count;
 
             return View(survey);
         }

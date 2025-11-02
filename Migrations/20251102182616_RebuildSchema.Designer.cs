@@ -12,8 +12,8 @@ using SurveyApp.Data;
 namespace SurveyApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251102141440_AddNewQuestionTypes")]
-    partial class AddNewQuestionTypes
+    [Migration("20251102182616_RebuildSchema")]
+    partial class RebuildSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace SurveyApp.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("SurveyApp.Models.Answer", b =>
+            modelBuilder.Entity("Answer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -48,6 +48,9 @@ namespace SurveyApp.Migrations
                     b.Property<int>("QuestionId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("QuestionId1")
+                        .HasColumnType("int");
+
                     b.Property<int?>("RatingValue")
                         .HasColumnType("int");
 
@@ -59,6 +62,8 @@ namespace SurveyApp.Migrations
                     b.HasIndex("OptionId");
 
                     b.HasIndex("QuestionId");
+
+                    b.HasIndex("QuestionId1");
 
                     b.HasIndex("ResponseId");
 
@@ -170,7 +175,7 @@ namespace SurveyApp.Migrations
                     b.ToTable("Surveys");
                 });
 
-            modelBuilder.Entity("SurveyApp.Models.Answer", b =>
+            modelBuilder.Entity("Answer", b =>
                 {
                     b.HasOne("SurveyApp.Models.Option", "Option")
                         .WithMany()
@@ -179,8 +184,12 @@ namespace SurveyApp.Migrations
                     b.HasOne("SurveyApp.Models.Question", "Question")
                         .WithMany()
                         .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("SurveyApp.Models.Question", null)
+                        .WithMany("Answers")
+                        .HasForeignKey("QuestionId1");
 
                     b.HasOne("SurveyApp.Models.Response", "Response")
                         .WithMany("Answers")
@@ -220,7 +229,7 @@ namespace SurveyApp.Migrations
             modelBuilder.Entity("SurveyApp.Models.Response", b =>
                 {
                     b.HasOne("SurveyApp.Models.Survey", "Survey")
-                        .WithMany()
+                        .WithMany("Responses")
                         .HasForeignKey("SurveyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -230,6 +239,8 @@ namespace SurveyApp.Migrations
 
             modelBuilder.Entity("SurveyApp.Models.Question", b =>
                 {
+                    b.Navigation("Answers");
+
                     b.Navigation("Options");
                 });
 
@@ -241,6 +252,8 @@ namespace SurveyApp.Migrations
             modelBuilder.Entity("SurveyApp.Models.Survey", b =>
                 {
                     b.Navigation("Questions");
+
+                    b.Navigation("Responses");
                 });
 #pragma warning restore 612, 618
         }

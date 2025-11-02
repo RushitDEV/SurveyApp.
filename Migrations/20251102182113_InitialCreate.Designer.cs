@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SurveyApp.Data;
 
@@ -11,9 +12,11 @@ using SurveyApp.Data;
 namespace SurveyApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251102182113_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,7 +48,7 @@ namespace SurveyApp.Migrations
                     b.Property<int>("QuestionId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("QuestionId1")
+                    b.Property<int>("QuestionId1")
                         .HasColumnType("int");
 
                     b.Property<int?>("RatingValue")
@@ -178,20 +181,22 @@ namespace SurveyApp.Migrations
                         .WithMany()
                         .HasForeignKey("OptionId");
 
-                    b.HasOne("SurveyApp.Models.Question", "Question")
+                    b.HasOne("SurveyApp.Models.Question", null)
                         .WithMany()
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("SurveyApp.Models.Question", null)
+                    b.HasOne("SurveyApp.Models.Question", "Question")
                         .WithMany("Answers")
-                        .HasForeignKey("QuestionId1");
+                        .HasForeignKey("QuestionId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("SurveyApp.Models.Response", "Response")
                         .WithMany("Answers")
                         .HasForeignKey("ResponseId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Option");

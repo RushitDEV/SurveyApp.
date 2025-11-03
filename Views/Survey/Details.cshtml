@@ -1,8 +1,9 @@
-@model SurveyApp.Models.Survey
+@model SurveyApp.ViewModels.SurveyDetailViewModel
+@using SurveyApp.ViewModels
 
 @{
     ViewData["Title"] = Model.Title;
-    var responses = ViewBag.Responses as List<SurveyApp.Models.Response> ?? new List<SurveyApp.Models.Response>();
+    var responses = ViewBag.Responses as List<ResponseDetailViewModel> ?? new List<ResponseDetailViewModel>();
     var responseCount = ViewBag.ResponseCount ?? 0;
 }
 
@@ -36,47 +37,45 @@
     <div class="container py-4">
         <div class="row mb-4">
             <div class="col-md-3">
-                <div class="card shadow-sm">
-                    <div class="card-body text-center">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
                         <i class="bi bi-calendar3 text-primary" style="font-size: 2rem;"></i>
-                        <p class="mb-0 mt-2 small text-muted">Oluþturma Tarihi</p>
-                        <p class="mb-0 fw-bold">
-                            @(Model.CreatedDate.ToString("dd MMM yyyy"))
-                        </p>
+                        <p class="small text-muted mt-2 mb-0">Oluþturma Tarihi</p>
+                        <p class="fw-bold mb-0">@Model.CreatedDate.ToString("dd MMM yyyy")</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card shadow-sm">
-                    <div class="card-body text-center">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
                         <i class="bi bi-question-circle text-success" style="font-size: 2rem;"></i>
-                        <p class="mb-0 mt-2 small text-muted">Toplam Soru</p>
-                        <p class="mb-0 fw-bold">@Model.Questions?.Count ?? 0</p>
+                        <p class="small text-muted mt-2 mb-0">Toplam Soru</p>
+                        <p class="fw-bold mb-0">@Model.Questions.Count</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card shadow-sm">
-                    <div class="card-body text-center">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
                         <i class="bi bi-people text-info" style="font-size: 2rem;"></i>
-                        <p class="mb-0 mt-2 small text-muted">Yanýt</p>
-                        <p class="mb-0 fw-bold">@responseCount</p>
+                        <p class="small text-muted mt-2 mb-0">Yanýt</p>
+                        <p class="fw-bold mb-0">@responseCount</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card shadow-sm">
-                    <div class="card-body text-center">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
                         @if (Model.IsActive)
                         {
                             <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
-                            <p class="mb-0 mt-2 small text-muted">Durum</p>
+                            <p class="small text-muted mt-2 mb-0">Durum</p>
                             <span class="badge bg-success">Aktif</span>
                         }
                         else
                         {
                             <i class="bi bi-x-circle text-danger" style="font-size: 2rem;"></i>
-                            <p class="mb-0 mt-2 small text-muted">Durum</p>
+                            <p class="small text-muted mt-2 mb-0">Durum</p>
                             <span class="badge bg-secondary">Pasif</span>
                         }
                     </div>
@@ -85,95 +84,51 @@
         </div>
 
         <!-- Tabs -->
-        <ul class="nav nav-tabs mb-4" id="surveyTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="questions-tab" data-bs-toggle="tab" data-bs-target="#questions" type="button">
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#questions" type="button">
                     <i class="bi bi-list-ul me-2"></i>Sorular
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="responses-tab" data-bs-toggle="tab" data-bs-target="#responses" type="button">
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#responses" type="button">
                     <i class="bi bi-bar-chart me-2"></i>Yanýtlar (@responseCount)
                 </button>
             </li>
         </ul>
 
         <!-- Tab Content -->
-        <div class="tab-content" id="surveyTabsContent">
-            <!-- Sorular Tab -->
-            <div class="tab-pane fade show active" id="questions" role="tabpanel">
+        <div class="tab-content">
+            <!-- Sorular -->
+            <div class="tab-pane fade show active" id="questions">
                 <div class="card shadow-sm">
                     <div class="card-header bg-white">
-                        <h5 class="mb-0 fw-bold">Sorular</h5>
+                        <h5 class="fw-bold mb-0">Sorular</h5>
                     </div>
                     <div class="card-body p-4">
                         @if (Model.Questions?.Any() ?? false)
                         {
                             @foreach (var question in Model.Questions.OrderBy(q => q.Order))
                             {
-                                <div class="question-preview mb-4 pb-4 border-bottom">
+                                <div class="mb-4 pb-4 border-bottom">
                                     <div class="d-flex align-items-start mb-3">
                                         <span class="badge bg-primary me-3">@question.Order</span>
-                                        <div class="flex-grow-1">
+                                        <div>
                                             <h6 class="mb-2">@question.QuestionText</h6>
-                                            <span class="badge bg-light text-dark">
-                                                @{
-                                                    switch (question.Type)
-                                                    {
-                                                        case SurveyApp.Models.QuestionType.SingleChoice:
-                                                            <text>Tek Seçmeli</text>
-                                                            ; break;
-                                                        case SurveyApp.Models.QuestionType.MultipleChoice:
-                                                            <text>Çok Seçmeli</text>
-                                                            ; break;
-                                                        case SurveyApp.Models.QuestionType.OpenEnded:
-                                                            <text>Açýk Uçlu</text>
-                                                            ; break;
-                                                        case SurveyApp.Models.QuestionType.ShortText:
-                                                            <text>Kýsa Metin</text>
-                                                            ; break;
-                                                        case SurveyApp.Models.QuestionType.Number:
-                                                            <text>Sayýsal</text>
-                                                            ; break;
-                                                        case SurveyApp.Models.QuestionType.DatePicker:
-                                                            <text>Tarih</text>
-                                                            ; break;
-                                                        case SurveyApp.Models.QuestionType.Rating5:
-                                                            <text>Derecelendirme 1-5</text>
-                                                            ; break;
-                                                        case SurveyApp.Models.QuestionType.Rating10:
-                                                            <text>Derecelendirme 1-10</text>
-                                                            ; break;
-                                                        case SurveyApp.Models.QuestionType.ImageUpload:
-                                                            <text>Resim Yükleme</text>
-                                                            ; break;
-                                                        case SurveyApp.Models.QuestionType.FileUpload:
-                                                            <text>Dosya Yükleme</text>
-                                                            ; break;
-                                                    }
-                                                }
-                                            </span>
+                                            <span class="badge bg-light text-dark">@question.Type</span>
                                         </div>
                                     </div>
-                                    <!-- Seçenekler -->
-                                    @if ((question.Type == SurveyApp.Models.QuestionType.SingleChoice ||
-                                                                question.Type == SurveyApp.Models.QuestionType.MultipleChoice) &&
-                                                                question.Options?.Any() == true)
+
+                                    @if (question.Options?.Any() == true)
                                     {
                                         <div class="ms-5">
                                             @foreach (var option in question.Options)
                                             {
                                                 <div class="form-check mb-2">
-                                                    <input class="form-check-input" type="@(question.Type == SurveyApp.Models.QuestionType.SingleChoice ? "radio" : "checkbox")" disabled>
+                                                    <input class="form-check-input" type="radio" disabled />
                                                     <label class="form-check-label">@option.OptionText</label>
                                                 </div>
                                             }
-                                        </div>
-                                    }
-                                    else if (question.Type == SurveyApp.Models.QuestionType.OpenEnded)
-                                    {
-                                        <div class="ms-5">
-                                            <textarea class="form-control bg-light" rows="3" placeholder="Kullanýcý buraya yanýt yazacak..." disabled></textarea>
                                         </div>
                                     }
                                 </div>
@@ -183,140 +138,54 @@
                         {
                             <div class="text-center py-5 text-muted">
                                 <i class="bi bi-question-circle" style="font-size: 3rem;"></i>
-                                <p class="mt-3">Bu ankette henüz soru bulunmuyor</p>
+                                <p class="mt-3">Bu ankette henüz soru bulunmuyor.</p>
                             </div>
                         }
                     </div>
                 </div>
             </div>
 
-            <!-- Yanýtlar Tab -->
-            <div class="tab-pane fade" id="responses" role="tabpanel">
-                @if (responses?.Any() ?? false)
+            <!-- Yanýtlar -->
+            <div class="tab-pane fade" id="responses">
+                @if (responses.Any())
                 {
-                    <!-- Soru Bazlý Ýstatistikler -->
                     <div class="card shadow-sm mb-4">
                         <div class="card-header bg-white">
-                            <h5 class="mb-0 fw-bold">Soru Bazlý Ýstatistikler</h5>
+                            <h5 class="fw-bold mb-0">Soru Bazlý Ýstatistikler</h5>
                         </div>
                         <div class="card-body p-4">
                             @foreach (var question in Model.Questions.OrderBy(q => q.Order))
                             {
-                                var questionAnswers = responses
-                                .SelectMany(r => r.Answers ?? new List<SurveyApp.Models.Answer>())
+                                var answers = responses
+                                .SelectMany(r => r.Answers)
                                 .Where(a => a.QuestionId == question.Id)
                                 .ToList();
 
-                                <div class="mb-5">
-                                    <div class="d-flex align-items-start mb-3">
-                                        <span class="badge bg-primary me-3">@question.Order</span>
-                                        <div class="flex-grow-1">
-                                            <h6 class="mb-2">@question.QuestionText</h6>
-                                            <span class="text-muted small">@questionAnswers.Count yanýt</span>
-                                        </div>
-                                    </div>
+                                <div class="mb-4">
+                                    <h6>@question.QuestionText</h6>
+                                    <span class="text-muted small">@answers.Count yanýt</span>
 
-                                    @if (question.Type == SurveyApp.Models.QuestionType.SingleChoice ||
-                                                                question.Type == SurveyApp.Models.QuestionType.MultipleChoice)
+                                    @if (question.Options?.Any() == true)
                                     {
                                         <div class="ms-5">
-                                            @foreach (var option in question.Options ?? new List<SurveyApp.Models.Option>())
+                                            @foreach (var option in question.Options)
                                             {
-                                                var optionCount = questionAnswers.Count(a => a.OptionId == option.Id);
-                                                var percentage = questionAnswers.Any() ? (optionCount * 100.0 / questionAnswers.Count) : 0;
-
+                                                var count = answers.Count(a => a.OptionId == option.Id);
+                                                var percent = answers.Any() ? (count * 100.0 / answers.Count) : 0;
                                                 <div class="mb-3">
-                                                    <div class="d-flex justify-content-between mb-1">
+                                                    <div class="d-flex justify-content-between">
                                                         <span>@option.OptionText</span>
-                                                        <span class="text-muted">@optionCount (@percentage.ToString("0.0")%)</span>
+                                                        <span class="text-muted">@count (@percent.ToString("0.0")%)</span>
                                                     </div>
-                                                    <div class="progress" style="height: 25px;">
-                                                        <div class="progress-bar bg-primary" role="progressbar"
-                                                             style="width: @(percentage)%"
-                                                             aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100">
-                                                        </div>
+                                                    <div class="progress" style="height: 20px;">
+                                                        <div class="progress-bar bg-primary" style="width:@percent%"></div>
                                                     </div>
                                                 </div>
                                             }
                                         </div>
                                     }
-                                    else if (question.Type == SurveyApp.Models.QuestionType.Rating5 ||
-                                    question.Type == SurveyApp.Models.QuestionType.Rating10)
-                                    {
-                                        var avgRating = questionAnswers.Any() ?
-                                        questionAnswers.Average(a => a.RatingValue ?? 0) : 0;
-
-                                        <div class="ms-5">
-                                            <div class="alert alert-info">
-                                                Ortalama: <strong>@avgRating.ToString("0.0")</strong>
-                                            </div>
-                                        </div>
-                                    }
-                                    else if (question.Type == SurveyApp.Models.QuestionType.OpenEnded ||
-                                    question.Type == SurveyApp.Models.QuestionType.ShortText)
-                                    {
-                                        <div class="ms-5">
-                                            @foreach (var answer in questionAnswers.Take(10))
-                                            {
-                                                <div class="alert alert-light mb-2">@answer.AnswerText</div>
-                                            }
-                                            @if (questionAnswers.Count > 10)
-                                            {
-                                                <p class="text-muted small">ve @(questionAnswers.Count - 10) yanýt daha...</p>
-                                            }
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="ms-5">
-                                            <div class="alert alert-secondary">
-                                                @questionAnswers.Count yanýt alýndý
-                                            </div>
-                                        </div>
-                                    }
                                 </div>
                             }
-                        </div>
-                    </div>
-
-                    <!-- Tüm Yanýtlar -->
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-white">
-                            <h5 class="mb-0 fw-bold">Tüm Yanýtlar</h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>IP Adresi</th>
-                                            <th>Tarih</th>
-                                            <th>Ýþlem</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @{
-                                            int counter = 1;
-                                        }
-                                        @foreach (var response in responses.OrderByDescending(r => r.CompletedDate))
-                                        {
-                                            <tr>
-                                                <td>@counter</td>
-                                                <td>@response.UserIp</td>
-                                                <td>@(response.CompletedDate?.ToString("dd MMM yyyy HH:mm") ?? "-")</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-primary"
-                                                            onclick="showResponseDetail(@response.Id)">
-                                                        <i class="bi bi-eye me-1"></i>Detay
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            counter++;
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
                         </div>
                     </div>
                 }
@@ -340,28 +209,10 @@
 <script>
     function deleteSurvey(id) {
         if (confirm('Bu anketi silmek istediðinizden emin misiniz?')) {
-            fetch('/Survey/Delete/' + id, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.href = '/Survey/Index';
-                } else {
-                    alert('Silme iþlemi baþarýsýz!');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Bir hata oluþtu!');
-            });
+            fetch('/Survey/Delete/' + id, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+                .then(r => r.json())
+                .then(d => { if (d.success) window.location.href = '/Survey/Index'; else alert('Silme iþlemi baþarýsýz!'); })
+                .catch(e => alert('Bir hata oluþtu: ' + e));
         }
-    }
-
-    function showResponseDetail(responseId) {
-        alert('Yanýt ID: ' + responseId + ' detaylarý gösterilecek');
     }
 </script>

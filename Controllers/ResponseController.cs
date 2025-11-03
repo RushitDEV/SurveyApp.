@@ -1,199 +1,226 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SurveyApp.Data;
+﻿using SurveyApp.ViewModels;
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using SurveyApp.Models;
+using SurveyApp.Repositories.Interfaces;
 
 namespace SurveyApp.Controllers
 {
     public class ResponseController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _environment;
 
-        public ResponseController(ApplicationDbContext context, IWebHostEnvironment environment)
+        public ResponseController(IUnitOfWork unitOfWork, IMapper mapper, IWebHostEnvironment environment)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
             _environment = environment;
         }
 
-        // Anketi göster
+        // GET: Response/TakeSurvey/5 - Anketi göster
         public async Task<IActionResult> TakeSurvey(int id)
         {
-            var survey = await _context.Surveys
-                .Include(s => s.Questions)
-                    .ThenInclude(q => q.Options)
-                .FirstOrDefaultAsync(s => s.Id == id && s.IsActive);
+            var survey = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
+                s => s.Id == id && s.IsActive,
+                s => s.Questions
+            );
 
-            if (survey == null)
+            var surveyEntity = survey.FirstOrDefault();
+            if (surveyEntity == null)
                 return NotFound();
 
-            // Anket süresi dolmuş mu kontrol et
-            if (survey.EndDate.HasValue && survey.EndDate.Value < DateTime.Now)
+            // Options'ları yükle
+            foreach (var question in surveyEntity.Questions)
             {
-                ViewBag.Expired = true;
-                return View(survey);
+                var options = await _unitOfWork.Options.GetWhereAsync(o => o.QuestionId == question.Id);
+                question.Options = options.ToList();
             }
 
-            return View(survey);
+            // Anket süresi dolmuş mu kontrol et
+            if (surveyEntity.EndDate.HasValue && surveyEntity.EndDate.Value < DateTime.Now)
+            {
+                ViewBag.Expired = true;
+            }
+
+            var viewModel = _mapper.Map<SurveyTakeViewModel>(surveyEntity);
+            return View(viewModel);
         }
 
-        // Cevapları kaydet - DÜZELTİLMİŞ
+        // POST: Response/SubmitResponse - Cevapları kaydet
         [HttpPost]
-        public async Task<IActionResult> SubmitResponse([FromBody] SubmitResponseModel model)
+        public async Task<IActionResult> SubmitResponse([FromBody] SubmitResponseViewModel model)
         {
             try
             {
-                var survey = await _context.Surveys
-                    .Include(s => s.Questions)
-                    .FirstOrDefaultAsync(s => s.Id == model.SurveyId);
+                await _unitOfWork.BeginTransactionAsync();
 
-                if (survey == null || !survey.IsActive)
+                var survey = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
+                    s => s.Id == model.SurveyId,
+                    s => s.Questions
+                );
+
+                var surveyEntity = survey.FirstOrDefault();
+                if (surveyEntity == null || !surveyEntity.IsActive)
+                {
                     return Json(new { success = false, message = "Anket bulunamadı veya aktif değil" });
+                }
 
-                if (survey.EndDate.HasValue && survey.EndDate.Value.Date < DateTime.Now.Date)
+                if (surveyEntity.EndDate.HasValue && surveyEntity.EndDate.Value.Date < DateTime.Now.Date)
+                {
                     return Json(new { success = false, message = "Anket süresi dolmuş" });
+                }
 
                 // IP adresini al
                 var userIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
 
-                // Response oluştur - ÖNCE KAYDET
+                // Response oluştur
                 var response = new Response
                 {
                     SurveyId = model.SurveyId,
                     UserIp = userIp,
-                    CompletedDate = DateTime.Now
+                    CompletedDate = DateTime.Now,
+                    CreatedAt = DateTime.Now
                 };
 
-                _context.Responses.Add(response);
-                await _context.SaveChangesAsync(); // ÖNCE Response'u kaydet ki ID alabilelim
+                await _unitOfWork.Responses.AddAsync(response);
+                await _unitOfWork.SaveChangesAsync(); // Response'u kaydet ki ID alabilelim
 
-                // Şimdi Answers'ı ekle
+                // Answers'ı ekle
                 foreach (var answerModel in model.Answers)
                 {
-                    var question = survey.Questions.FirstOrDefault(q => q.Id == answerModel.QuestionId);
+                    var question = surveyEntity.Questions.FirstOrDefault(q => q.Id == answerModel.QuestionId);
                     if (question == null) continue;
 
-                    // Soru tipine göre cevabı kaydet
-                    switch (question.Type)
-                    {
-                        case QuestionType.SingleChoice:
-                            if (answerModel.OptionId.HasValue)
-                            {
-                                var answer = new Answer
-                                {
-                                    ResponseId = response.Id, // Artık ID var
-                                    QuestionId = answerModel.QuestionId,
-                                    OptionId = answerModel.OptionId,
-                                    AnswerDate = DateTime.Now
-                                };
-                                _context.Answers.Add(answer);
-                            }
-                            break;
-
-                        case QuestionType.MultipleChoice:
-                            // Çoklu seçim için her seçenek ayrı answer
-                            if (answerModel.OptionIds != null && answerModel.OptionIds.Any())
-                            {
-                                foreach (var optionId in answerModel.OptionIds)
-                                {
-                                    var answer = new Answer
-                                    {
-                                        ResponseId = response.Id,
-                                        QuestionId = answerModel.QuestionId,
-                                        OptionId = optionId,
-                                        AnswerDate = DateTime.Now
-                                    };
-                                    _context.Answers.Add(answer);
-                                }
-                            }
-                            break;
-
-                        case QuestionType.OpenEnded:
-                        case QuestionType.ShortText:
-                            if (!string.IsNullOrEmpty(answerModel.AnswerText))
-                            {
-                                var answer = new Answer
-                                {
-                                    ResponseId = response.Id,
-                                    QuestionId = answerModel.QuestionId,
-                                    AnswerText = answerModel.AnswerText,
-                                    AnswerDate = DateTime.Now
-                                };
-                                _context.Answers.Add(answer);
-                            }
-                            break;
-
-                        case QuestionType.Number:
-                            if (answerModel.NumberValue.HasValue)
-                            {
-                                var answer = new Answer
-                                {
-                                    ResponseId = response.Id,
-                                    QuestionId = answerModel.QuestionId,
-                                    AnswerText = answerModel.NumberValue.ToString(),
-                                    AnswerDate = DateTime.Now
-                                };
-                                _context.Answers.Add(answer);
-                            }
-                            break;
-
-                        case QuestionType.DatePicker:
-                            if (answerModel.DateValue.HasValue)
-                            {
-                                var answer = new Answer
-                                {
-                                    ResponseId = response.Id,
-                                    QuestionId = answerModel.QuestionId,
-                                    AnswerText = answerModel.DateValue.Value.ToString("yyyy-MM-dd"),
-                                    AnswerDate = DateTime.Now
-                                };
-                                _context.Answers.Add(answer);
-                            }
-                            break;
-
-                        case QuestionType.Rating5:
-                        case QuestionType.Rating10:
-                            if (answerModel.RatingValue.HasValue)
-                            {
-                                var answer = new Answer
-                                {
-                                    ResponseId = response.Id,
-                                    QuestionId = answerModel.QuestionId,
-                                    RatingValue = answerModel.RatingValue,
-                                    AnswerDate = DateTime.Now
-                                };
-                                _context.Answers.Add(answer);
-                            }
-                            break;
-
-                        case QuestionType.ImageUpload:
-                        case QuestionType.FileUpload:
-                            if (!string.IsNullOrEmpty(answerModel.FileName))
-                            {
-                                var answer = new Answer
-                                {
-                                    ResponseId = response.Id,
-                                    QuestionId = answerModel.QuestionId,
-                                    FilePath = answerModel.FileName,
-                                    AnswerDate = DateTime.Now
-                                };
-                                _context.Answers.Add(answer);
-                            }
-                            break;
-                    }
+                    await ProcessAnswer(response.Id, answerModel, question.Type);
                 }
 
-                await _context.SaveChangesAsync(); // Tüm Answers'ı kaydet
+                await _unitOfWork.CommitTransactionAsync();
 
                 return Json(new { success = true, message = "Cevaplarınız kaydedildi. Teşekkürler!" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Bir hata oluştu: " + ex.Message + " | " + ex.InnerException?.Message });
+                await _unitOfWork.RollbackTransactionAsync();
+                return Json(new { success = false, message = "Bir hata oluştu: " + ex.Message });
             }
         }
 
-        // Dosya yükleme
+        // Helper method - Cevap işleme
+        private async Task ProcessAnswer(int responseId, AnswerSubmitViewModel answerModel, QuestionType questionType)
+        {
+            switch (questionType)
+            {
+                case QuestionType.SingleChoice:
+                    if (answerModel.OptionId.HasValue)
+                    {
+                        var answer = new Answer
+                        {
+                            ResponseId = responseId,
+                            QuestionId = answerModel.QuestionId,
+                            OptionId = answerModel.OptionId,
+                            AnswerDate = DateTime.Now
+                        };
+                        await _unitOfWork.Answers.AddAsync(answer);
+                    }
+                    break;
+
+                case QuestionType.MultipleChoice:
+                    if (answerModel.OptionIds != null && answerModel.OptionIds.Any())
+                    {
+                        foreach (var optionId in answerModel.OptionIds)
+                        {
+                            var answer = new Answer
+                            {
+                                ResponseId = responseId,
+                                QuestionId = answerModel.QuestionId,
+                                OptionId = optionId,
+                                AnswerDate = DateTime.Now
+                            };
+                            await _unitOfWork.Answers.AddAsync(answer);
+                        }
+                    }
+                    break;
+
+                case QuestionType.OpenEnded:
+                case QuestionType.ShortText:
+                    if (!string.IsNullOrEmpty(answerModel.AnswerText))
+                    {
+                        var answer = new Answer
+                        {
+                            ResponseId = responseId,
+                            QuestionId = answerModel.QuestionId,
+                            AnswerText = answerModel.AnswerText,
+                            AnswerDate = DateTime.Now
+                        };
+                        await _unitOfWork.Answers.AddAsync(answer);
+                    }
+                    break;
+
+                case QuestionType.Number:
+                    if (answerModel.NumberValue.HasValue)
+                    {
+                        var answer = new Answer
+                        {
+                            ResponseId = responseId,
+                            QuestionId = answerModel.QuestionId,
+                            AnswerText = answerModel.NumberValue.ToString(),
+                            AnswerDate = DateTime.Now
+                        };
+                        await _unitOfWork.Answers.AddAsync(answer);
+                    }
+                    break;
+
+                case QuestionType.DatePicker:
+                    if (answerModel.DateValue.HasValue)
+                    {
+                        var answer = new Answer
+                        {
+                            ResponseId = responseId,
+                            QuestionId = answerModel.QuestionId,
+                            AnswerText = answerModel.DateValue.Value.ToString("yyyy-MM-dd"),
+                            AnswerDate = DateTime.Now
+                        };
+                        await _unitOfWork.Answers.AddAsync(answer);
+                    }
+                    break;
+
+                case QuestionType.Rating5:
+                case QuestionType.Rating10:
+                    if (answerModel.RatingValue.HasValue)
+                    {
+                        var answer = new Answer
+                        {
+                            ResponseId = responseId,
+                            QuestionId = answerModel.QuestionId,
+                            RatingValue = answerModel.RatingValue,
+                            AnswerDate = DateTime.Now
+                        };
+                        await _unitOfWork.Answers.AddAsync(answer);
+                    }
+                    break;
+
+                case QuestionType.ImageUpload:
+                case QuestionType.FileUpload:
+                    if (!string.IsNullOrEmpty(answerModel.FileName))
+                    {
+                        var answer = new Answer
+                        {
+                            ResponseId = responseId,
+                            QuestionId = answerModel.QuestionId,
+                            FilePath = answerModel.FileName,
+                            AnswerDate = DateTime.Now
+                        };
+                        await _unitOfWork.Answers.AddAsync(answer);
+                    }
+                    break;
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        // POST: Response/UploadFile - Dosya yükleme
         [HttpPost]
         public async Task<IActionResult> UploadFile(IFormFile file, int questionId)
         {
@@ -229,29 +256,10 @@ namespace SurveyApp.Controllers
             }
         }
 
-        // Teşekkür sayfası
+        // GET: Response/ThankYou - Teşekkür sayfası
         public IActionResult ThankYou()
         {
             return View();
         }
-    }
-
-    // ViewModel'ler
-    public class SubmitResponseModel
-    {
-        public int SurveyId { get; set; }
-        public List<AnswerSubmitModel> Answers { get; set; }
-    }
-
-    public class AnswerSubmitModel
-    {
-        public int QuestionId { get; set; }
-        public int? OptionId { get; set; }
-        public List<int>? OptionIds { get; set; }
-        public string? AnswerText { get; set; }
-        public int? NumberValue { get; set; }
-        public DateTime? DateValue { get; set; }
-        public int? RatingValue { get; set; }
-        public string? FileName { get; set; }
     }
 }

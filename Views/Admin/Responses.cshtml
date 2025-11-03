@@ -1,0 +1,38 @@
+﻿@model SurveyApp.Models.Survey
+
+<div class="container mt-5">
+    <h2 class="mb-3">@Model.Title - Cevaplar</h2>
+
+    @if (Model.Responses == null || !Model.Responses.Any())
+    {
+        <div class="alert alert-warning">Bu ankete henüz yanıt verilmemiş.</div>
+    }
+    else
+    {
+        @foreach (var response in Model.Responses)
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    Cevap ID: @response.Id - Tarih: @response.CreatedAt.ToShortDateString()
+                </div>
+                <div class="card-body">
+                    @foreach (var answer in response.Answers)
+                    {
+                        var question = Model.Questions.FirstOrDefault(q => q.Id == answer.QuestionId);
+                        <p>
+                            <strong>@question?.QuestionText:</strong>
+                            @if (answer.Option != null)
+                            {
+                                @answer.Option.OptionText
+                            }
+                            else
+                            {
+                                @answer.AnswerText
+                            }
+                        </p>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

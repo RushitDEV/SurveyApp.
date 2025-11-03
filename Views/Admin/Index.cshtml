@@ -1,0 +1,33 @@
+﻿@model IEnumerable<SurveyApp.Models.Survey>
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">🧠 Anket Yönetim Paneli</h2>
+
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Başlık</th>
+                <th>Soru Sayısı</th>
+                <th>Cevap Sayısı</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var survey in Model)
+            {
+                <tr>
+                    <td>@survey.Id</td>
+                    <td>@survey.Title</td>
+                    <td>@survey.Questions.Count</td>
+                    <td>@survey.Responses.Count</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="/Admin/Responses/@survey.Id">
+                            Cevapları Görüntüle
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

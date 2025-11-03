@@ -40,7 +40,9 @@
                     <div class="card-body text-center">
                         <i class="bi bi-calendar3 text-primary" style="font-size: 2rem;"></i>
                         <p class="mb-0 mt-2 small text-muted">Oluþturma Tarihi</p>
-                        <p class="mb-0 fw-bold">@Model.CreatedDate.ToString("dd MMM yyyy")</p>
+                        <p class="mb-0 fw-bold">
+                            @(Model.CreatedDate.ToString("dd MMM yyyy"))
+                        </p>
                     </div>
                 </div>
             </div>
@@ -49,7 +51,7 @@
                     <div class="card-body text-center">
                         <i class="bi bi-question-circle text-success" style="font-size: 2rem;"></i>
                         <p class="mb-0 mt-2 small text-muted">Toplam Soru</p>
-                        <p class="mb-0 fw-bold">@Model.Questions.Count</p>
+                        <p class="mb-0 fw-bold">@Model.Questions?.Count ?? 0</p>
                     </div>
                 </div>
             </div>
@@ -105,7 +107,7 @@
                         <h5 class="mb-0 fw-bold">Sorular</h5>
                     </div>
                     <div class="card-body p-4">
-                        @if (Model.Questions.Any())
+                        @if (Model.Questions?.Any() ?? false)
                         {
                             @foreach (var question in Model.Questions.OrderBy(q => q.Order))
                             {
@@ -115,89 +117,55 @@
                                         <div class="flex-grow-1">
                                             <h6 class="mb-2">@question.QuestionText</h6>
                                             <span class="badge bg-light text-dark">
-                                                @if (question.Type == SurveyApp.Models.QuestionType.SingleChoice)
-                                                {
-                                                    <i class="bi bi-ui-radios me-1"></i>
-                                        
-                                                    <text>Tek Seçmeli</text>
-                                                }
-                                                else if (question.Type == SurveyApp.Models.QuestionType.MultipleChoice)
-                                                {
-                                                    <i class="bi bi-ui-checks me-1"></i>
-                                        
-                                                    <text>Çok Seçmeli</text>
-                                                }
-                                                else if (question.Type == SurveyApp.Models.QuestionType.OpenEnded)
-                                                {
-                                                    <i class="bi bi-text-paragraph me-1"></i>
-                                        
-                                                    <text>Açýk Uçlu</text>
-                                                }
-                                                else if (question.Type == SurveyApp.Models.QuestionType.ShortText)
-                                                {
-                                                    <i class="bi bi-input-cursor-text me-1"></i>
-                                        
-                                                    <text>Kýsa Metin</text>
-                                                }
-                                                else if (question.Type == SurveyApp.Models.QuestionType.Number)
-                                                {
-                                                    <i class="bi bi-123 me-1"></i>
-                                        
-                                                    <text>Sayýsal</text>
-                                                }
-                                                else if (question.Type == SurveyApp.Models.QuestionType.DatePicker)
-                                                {
-                                                    <i class="bi bi-calendar-date me-1"></i>
-                                        
-                                                    <text>Tarih</text>
-                                                }
-                                                else if (question.Type == SurveyApp.Models.QuestionType.Rating5)
-                                                {
-                                                    <i class="bi bi-star me-1"></i>
-                                        
-                                                    <text>Derecelendirme 1-5</text>
-                                                }
-                                                else if (question.Type == SurveyApp.Models.QuestionType.Rating10)
-                                                {
-                                                    <i class="bi bi-star-half me-1"></i>
-                                        
-                                                    <text>Derecelendirme 1-10</text>
-                                                }
-                                                else if (question.Type == SurveyApp.Models.QuestionType.ImageUpload)
-                                                {
-                                                    <i class="bi bi-image me-1"></i>
-                                        
-                                                    <text>Resim Yükleme</text>
-                                                }
-                                                else if (question.Type == SurveyApp.Models.QuestionType.FileUpload)
-                                                {
-                                                    <i class="bi bi-file-earmark me-1"></i>
-                                        
-                                                    <text>Dosya Yükleme</text>
+                                                @{
+                                                    switch (question.Type)
+                                                    {
+                                                        case SurveyApp.Models.QuestionType.SingleChoice:
+                                                            <text>Tek Seçmeli</text>
+                                                            ; break;
+                                                        case SurveyApp.Models.QuestionType.MultipleChoice:
+                                                            <text>Çok Seçmeli</text>
+                                                            ; break;
+                                                        case SurveyApp.Models.QuestionType.OpenEnded:
+                                                            <text>Açýk Uçlu</text>
+                                                            ; break;
+                                                        case SurveyApp.Models.QuestionType.ShortText:
+                                                            <text>Kýsa Metin</text>
+                                                            ; break;
+                                                        case SurveyApp.Models.QuestionType.Number:
+                                                            <text>Sayýsal</text>
+                                                            ; break;
+                                                        case SurveyApp.Models.QuestionType.DatePicker:
+                                                            <text>Tarih</text>
+                                                            ; break;
+                                                        case SurveyApp.Models.QuestionType.Rating5:
+                                                            <text>Derecelendirme 1-5</text>
+                                                            ; break;
+                                                        case SurveyApp.Models.QuestionType.Rating10:
+                                                            <text>Derecelendirme 1-10</text>
+                                                            ; break;
+                                                        case SurveyApp.Models.QuestionType.ImageUpload:
+                                                            <text>Resim Yükleme</text>
+                                                            ; break;
+                                                        case SurveyApp.Models.QuestionType.FileUpload:
+                                                            <text>Dosya Yükleme</text>
+                                                            ; break;
+                                                    }
                                                 }
                                             </span>
                                         </div>
                                     </div>
-
+                                    <!-- Seçenekler -->
                                     @if ((question.Type == SurveyApp.Models.QuestionType.SingleChoice ||
                                                                 question.Type == SurveyApp.Models.QuestionType.MultipleChoice) &&
-                                                                question.Options.Any())
+                                                                question.Options?.Any() == true)
                                     {
                                         <div class="ms-5">
                                             @foreach (var option in question.Options)
                                             {
                                                 <div class="form-check mb-2">
-                                                    @if (question.Type == SurveyApp.Models.QuestionType.SingleChoice)
-                                                    {
-                                                        <input class="form-check-input" type="radio" disabled>
-                                                    }
-                                                    else
-                                                    {
-                                                        <input class="form-check-input" type="checkbox" disabled>
-                                                    }
-                                                    <label class="form-check-label">
-                                                        @option.OptionText
-                                                    </label>
+                                                    <input class="form-check-input" type="@(question.Type == SurveyApp.Models.QuestionType.SingleChoice ? "radio" : "checkbox")" disabled>
+                                                    <label class="form-check-label">@option.OptionText</label>
                                                 </div>
                                             }
                                         </div>
@@ -224,7 +192,7 @@
 
             <!-- Yanýtlar Tab -->
             <div class="tab-pane fade" id="responses" role="tabpanel">
-                @if (responses.Any())
+                @if (responses?.Any() ?? false)
                 {
                     <!-- Soru Bazlý Ýstatistikler -->
                     <div class="card shadow-sm mb-4">
@@ -235,7 +203,7 @@
                             @foreach (var question in Model.Questions.OrderBy(q => q.Order))
                             {
                                 var questionAnswers = responses
-                                .SelectMany(r => r.Answers)
+                                .SelectMany(r => r.Answers ?? new List<SurveyApp.Models.Answer>())
                                 .Where(a => a.QuestionId == question.Id)
                                 .ToList();
 
@@ -252,7 +220,7 @@
                                                                 question.Type == SurveyApp.Models.QuestionType.MultipleChoice)
                                     {
                                         <div class="ms-5">
-                                            @foreach (var option in question.Options)
+                                            @foreach (var option in question.Options ?? new List<SurveyApp.Models.Option>())
                                             {
                                                 var optionCount = questionAnswers.Count(a => a.OptionId == option.Id);
                                                 var percentage = questionAnswers.Any() ? (optionCount * 100.0 / questionAnswers.Count) : 0;
@@ -280,7 +248,6 @@
 
                                         <div class="ms-5">
                                             <div class="alert alert-info">
-                                                <i class="bi bi-star-fill text-warning"></i>
                                                 Ortalama: <strong>@avgRating.ToString("0.0")</strong>
                                             </div>
                                         </div>
@@ -291,10 +258,7 @@
                                         <div class="ms-5">
                                             @foreach (var answer in questionAnswers.Take(10))
                                             {
-                                                <div class="alert alert-light mb-2">
-                                                    <i class="bi bi-chat-left-quote me-2"></i>
-                                                    @answer.AnswerText
-                                                </div>
+                                                <div class="alert alert-light mb-2">@answer.AnswerText</div>
                                             }
                                             @if (questionAnswers.Count > 10)
                                             {
@@ -340,7 +304,7 @@
                                             <tr>
                                                 <td>@counter</td>
                                                 <td>@response.UserIp</td>
-                                                <td>@response.CompletedDate.ToString("dd MMM yyyy HH:mm")</td>
+                                                <td>@(response.CompletedDate?.ToString("dd MMM yyyy HH:mm") ?? "-")</td>
                                                 <td>
                                                     <button class="btn btn-sm btn-outline-primary"
                                                             onclick="showResponseDetail(@response.Id)">

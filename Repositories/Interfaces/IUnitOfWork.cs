@@ -1,16 +1,15 @@
-﻿using System.Threading.Tasks;
+﻿using SurveyApp.Models;
 
 namespace SurveyApp.Repositories.Interfaces
 {
     public interface IUnitOfWork
     {
-        ISurveyRepository Surveys { get; }
-        IQuestionRepository Questions { get; }
-        IOptionRepository Options { get; }
-        IResponseRepository Responses { get; }
-        IAnswerRepository Answers { get; }
+        IRepository<Survey> Surveys { get; }
+        IRepository<Question> Questions { get; }
+        IRepository<Option> Options { get; }
+        IRepository<Response> Responses { get; }
+        IRepository<Answer> Answers { get; }
 
-        // ✅ Transaction & Save methods
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();

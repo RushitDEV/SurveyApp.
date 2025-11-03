@@ -67,7 +67,7 @@ namespace SurveyApp.Migrations
                     b.ToTable("Answers");
                 });
 
-            modelBuilder.Entity("SurveyApp.Models.Option", b =>
+            modelBuilder.Entity("Option", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -97,6 +97,9 @@ namespace SurveyApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
                     b.Property<int>("Order")
                         .HasColumnType("int");
 
@@ -125,14 +128,16 @@ namespace SurveyApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CompletedDate")
+                    b.Property<DateTime?>("CompletedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("SurveyId")
                         .HasColumnType("int");
 
                     b.Property<string>("UserIp")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -174,7 +179,7 @@ namespace SurveyApp.Migrations
 
             modelBuilder.Entity("Answer", b =>
                 {
-                    b.HasOne("SurveyApp.Models.Option", "Option")
+                    b.HasOne("Option", "Option")
                         .WithMany()
                         .HasForeignKey("OptionId");
 
@@ -201,7 +206,7 @@ namespace SurveyApp.Migrations
                     b.Navigation("Response");
                 });
 
-            modelBuilder.Entity("SurveyApp.Models.Option", b =>
+            modelBuilder.Entity("Option", b =>
                 {
                     b.HasOne("SurveyApp.Models.Question", "Question")
                         .WithMany("Options")

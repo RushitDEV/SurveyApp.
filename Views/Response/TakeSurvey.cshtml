@@ -1,4 +1,4 @@
-﻿@model SurveyApp.Models.Survey
+﻿@model SurveyApp.ViewModels.SurveyTakeViewModel
 
 @{
     ViewData["Title"] = Model.Title;
@@ -58,7 +58,7 @@
 
                                         @switch (question.Type)
                                         {
-                                            case QuestionType.SingleChoice:
+                                            case "SingleChoice":
                                                 <div class="ms-4">
                                                     @foreach (var option in question.Options)
                                                     {
@@ -75,7 +75,7 @@
                                                 </div>
                                                 break;
 
-                                            case QuestionType.MultipleChoice:
+                                            case "MultipleChoice":
                                                 <div class="ms-4">
                                                     @foreach (var option in question.Options)
                                                     {
@@ -92,30 +92,30 @@
                                                 </div>
                                                 break;
 
-                                            case QuestionType.OpenEnded:
+                                            case "OpenEnded":
                                                 <textarea class="form-control" rows="4"
                                           placeholder="Cevabınızı buraya yazın..."
                                           data-question-id="@question.Id"></textarea>
                                                 break;
 
-                                            case QuestionType.ShortText:
+                                            case "ShortText":
                                                 <input type="text" class="form-control"
                                                        placeholder="Cevabınızı yazın..."
                                                        data-question-id="@question.Id">
                                                 break;
 
-                                            case QuestionType.Number:
+                                            case "Number":
                                                 <input type="number" class="form-control"
                                                        placeholder="Sayı girin..."
                                                        data-question-id="@question.Id">
                                                 break;
 
-                                            case QuestionType.DatePicker:
+                                            case "DatePicker":
                                                 <input type="date" class="form-control"
                                                        data-question-id="@question.Id">
                                                 break;
 
-                                            case QuestionType.Rating5:
+                                            case "Rating5":
                                                 <div class="rating-container" data-question-id="@question.Id" data-max-rating="5">
                                                     @for (int star = 1; star <= 5; star++)
                                                     {
@@ -125,7 +125,7 @@
                                                 </div>
                                                 break;
 
-                                            case QuestionType.Rating10:
+                                            case "Rating10":
                                                 <div class="d-flex align-items-center">
                                                     <span class="me-2">1</span>
                                                     <input type="range" class="form-range flex-grow-1"
@@ -137,7 +137,7 @@
                                                 </div>
                                                 break;
 
-                                            case QuestionType.ImageUpload:
+                                            case "ImageUpload":
                                                 <div class="upload-area" data-question-id="@question.Id" data-upload-type="image">
                                                     <input type="file" class="form-control" accept="image/*"
                                                            data-question-id="@question.Id"
@@ -146,7 +146,7 @@
                                                 </div>
                                                 break;
 
-                                            case QuestionType.FileUpload:
+                                            case "FileUpload":
                                                 <div class="upload-area" data-question-id="@question.Id" data-upload-type="file">
                                                     <input type="file" class="form-control"
                                                            accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"

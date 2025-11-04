@@ -31,7 +31,7 @@ namespace SurveyApp.Controllers
             if (surveyEntity == null)
                 return NotFound();
 
-            // Options'ları yükle
+            // ✅ Options'ları her soru için yükle
             foreach (var question in surveyEntity.Questions)
             {
                 var options = await _unitOfWork.Options.GetWhereAsync(o => o.QuestionId == question.Id);
@@ -44,7 +44,29 @@ namespace SurveyApp.Controllers
                 ViewBag.Expired = true;
             }
 
-            var viewModel = _mapper.Map<SurveyTakeViewModel>(surveyEntity);
+            // ✅ Manuel mapping yap (AutoMapper bazen nested ilişkileri düzgün map edemeyebilir)
+            var viewModel = new SurveyTakeViewModel
+            {
+                Id = surveyEntity.Id,
+                SurveyId = surveyEntity.Id,
+                Title = surveyEntity.Title,
+                Description = surveyEntity.Description,
+                EndDate = surveyEntity.EndDate,
+                Questions = surveyEntity.Questions.OrderBy(q => q.Order).Select(q => new QuestionDetailViewModel
+                {
+                    Id = q.Id,
+                    QuestionText = q.QuestionText,
+                    Type = q.Type.ToString(), // Enum'u string'e çevir
+                    Order = q.Order,
+                    IsRequired = q.IsRequired,
+                    Options = q.Options.Select(o => new OptionViewModel
+                    {
+                        Id = o.Id,
+                        OptionText = o.OptionText
+                    }).ToList()
+                }).ToList()
+            };
+
             return View(viewModel);
         }
 

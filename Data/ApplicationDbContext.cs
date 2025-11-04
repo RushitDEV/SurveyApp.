@@ -25,35 +25,42 @@ namespace SurveyApp.Data
                 .HasMany(s => s.Questions)
                 .WithOne(q => q.Survey)
                 .HasForeignKey(q => q.SurveyId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Question - Options
             modelBuilder.Entity<Question>()
                 .HasMany(q => q.Options)
                 .WithOne(o => o.Question)
                 .HasForeignKey(o => o.QuestionId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Survey - Responses
             modelBuilder.Entity<Survey>()
                 .HasMany(s => s.Responses)
                 .WithOne(r => r.Survey)
                 .HasForeignKey(r => r.SurveyId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Response - Answers
             modelBuilder.Entity<Response>()
                 .HasMany(r => r.Answers)
                 .WithOne(a => a.Response)
                 .HasForeignKey(a => a.ResponseId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
-            // ✅ En önemli düzeltme:
-            modelBuilder.Entity<Answer>()
-                .HasOne(a => a.Question)
-                .WithMany()
+            // ✅ Question - Answers (önemli kısım)
+            modelBuilder.Entity<Question>()
+                .HasMany(q => q.Answers)
+                .WithOne(a => a.Question)
                 .HasForeignKey(a => a.QuestionId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ✅ Option - Answers (isteğe bağlı ilişki)
+            modelBuilder.Entity<Answer>()
+                .HasOne(a => a.Option)
+                .WithMany()
+                .HasForeignKey(a => a.OptionId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

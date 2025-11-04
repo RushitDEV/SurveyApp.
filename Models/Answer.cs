@@ -1,20 +1,24 @@
-﻿using SurveyApp.Models;
+﻿using System;
+using SurveyApp.Models;
 
-public class Answer
+namespace SurveyApp.Models
 {
-    public int Id { get; set; }
+    public class Answer
+    {
+        public int Id { get; set; }
 
-    public int ResponseId { get; set; }
-    public int QuestionId { get; set; }
-    public int? OptionId { get; set; }
+        public int ResponseId { get; set; }
+        public Response Response { get; set; } = null!; // ✅ null! ekledik
 
-    public string? AnswerText { get; set; }
-    public string? FilePath { get; set; }
-    public int? RatingValue { get; set; }
-    public DateTime AnswerDate { get; set; }
+        public int QuestionId { get; set; }
+        public Question Question { get; set; } = null!; // ✅ null! ekledik
 
-    // Navigation properties
-    public Response Response { get; set; }
-    public Question Question { get; set; }
-    public Option? Option { get; set; }
+        public int? OptionId { get; set; }
+        public Option? Option { get; set; }
+
+        public string? AnswerText { get; set; }
+        public string? FilePath { get; set; }
+        public int? RatingValue { get; set; }
+        public DateTime AnswerDate { get; set; }
+    }
 }

@@ -22,7 +22,29 @@ namespace SurveyApp.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Answer", b =>
+            modelBuilder.Entity("Option", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("OptionText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionId");
+
+                    b.ToTable("Options");
+                });
+
+            modelBuilder.Entity("SurveyApp.Models.Answer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -45,9 +67,6 @@ namespace SurveyApp.Migrations
                     b.Property<int>("QuestionId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("QuestionId1")
-                        .HasColumnType("int");
-
                     b.Property<int?>("RatingValue")
                         .HasColumnType("int");
 
@@ -60,33 +79,9 @@ namespace SurveyApp.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.HasIndex("QuestionId1");
-
                     b.HasIndex("ResponseId");
 
                     b.ToTable("Answers");
-                });
-
-            modelBuilder.Entity("Option", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("OptionText")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("QuestionId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("QuestionId");
-
-                    b.ToTable("Options");
                 });
 
             modelBuilder.Entity("SurveyApp.Models.Question", b =>
@@ -177,26 +172,34 @@ namespace SurveyApp.Migrations
                     b.ToTable("Surveys");
                 });
 
-            modelBuilder.Entity("Answer", b =>
+            modelBuilder.Entity("Option", b =>
+                {
+                    b.HasOne("SurveyApp.Models.Question", "Question")
+                        .WithMany("Options")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("SurveyApp.Models.Answer", b =>
                 {
                     b.HasOne("Option", "Option")
                         .WithMany()
-                        .HasForeignKey("OptionId");
+                        .HasForeignKey("OptionId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("SurveyApp.Models.Question", "Question")
-                        .WithMany()
-                        .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("SurveyApp.Models.Question", null)
                         .WithMany("Answers")
-                        .HasForeignKey("QuestionId1");
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("SurveyApp.Models.Response", "Response")
                         .WithMany("Answers")
                         .HasForeignKey("ResponseId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Option");
@@ -206,23 +209,12 @@ namespace SurveyApp.Migrations
                     b.Navigation("Response");
                 });
 
-            modelBuilder.Entity("Option", b =>
-                {
-                    b.HasOne("SurveyApp.Models.Question", "Question")
-                        .WithMany("Options")
-                        .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Question");
-                });
-
             modelBuilder.Entity("SurveyApp.Models.Question", b =>
                 {
                     b.HasOne("SurveyApp.Models.Survey", "Survey")
                         .WithMany("Questions")
                         .HasForeignKey("SurveyId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Survey");
@@ -233,7 +225,7 @@ namespace SurveyApp.Migrations
                     b.HasOne("SurveyApp.Models.Survey", "Survey")
                         .WithMany("Responses")
                         .HasForeignKey("SurveyId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Survey");

@@ -1,5 +1,4 @@
-﻿@model SurveyApp.Models.Survey
-
+﻿@model SurveyApp.ViewModels.SurveyCreateEditViewModel
 @{
     ViewData["Title"] = "Anketi Düzenle";
 }
@@ -97,17 +96,18 @@
 <script>
     let questionCount = @Model.Questions.Count;
 
+    // ✅ String-based question types
     const questionTypes = {
-        1: { name: 'Tek Seçmeli', needsOptions: true },
-        2: { name: 'Çok Seçmeli', needsOptions: true },
-        3: { name: 'Açık Uçlu', needsOptions: false },
-        4: { name: 'Kısa Metin', needsOptions: false },
-        5: { name: 'Resim Eklemeli', needsOptions: false },
-        6: { name: 'Dosya Yükleme', needsOptions: false },
-        7: { name: 'Tarih', needsOptions: false },
-        8: { name: 'Sayısal', needsOptions: false },
-        9: { name: 'Derecelendirme (1-5)', needsOptions: false },
-        10: { name: 'Derecelendirme (1-10)', needsOptions: false }
+        'SingleChoice': { name: 'Tek Seçmeli', needsOptions: true },
+        'MultipleChoice': { name: 'Çok Seçmeli', needsOptions: true },
+        'OpenEnded': { name: 'Açık Uçlu', needsOptions: false },
+        'ShortText': { name: 'Kısa Metin', needsOptions: false },
+        'ImageUpload': { name: 'Resim Eklemeli', needsOptions: false },
+        'FileUpload': { name: 'Dosya Yükleme', needsOptions: false },
+        'DatePicker': { name: 'Tarih', needsOptions: false },
+        'Number': { name: 'Sayısal', needsOptions: false },
+        'Rating5': { name: 'Derecelendirme (1-5)', needsOptions: false },
+        'Rating10': { name: 'Derecelendirme (1-10)', needsOptions: false }
     };
 
     // Mevcut soruları yükle
@@ -117,7 +117,7 @@
                 <text>
                 loadExistingQuestion(
                     '@Html.Raw(question.QuestionText.Replace("'", "\\'"))',
-                    @((int)question.Type),
+                    '@question.Type',
                     [@string.Join(",", question.Options.Select(o => "'" + Html.Raw(o.OptionText.Replace("'", "\\'")) + "'"))]
                 );
                 </text>
@@ -166,7 +166,7 @@
         }
     }
 
-    function createQuestionHtml(id, text = '', type = 1) {
+    function createQuestionHtml(id, text = '', type = 'SingleChoice') {
         return `
             <div class="question-card border rounded p-4 mb-3 bg-white" id="question_${id}" data-question-id="${id}">
                 <div class="d-flex justify-content-between align-items-start mb-3">
@@ -186,24 +186,24 @@
                     <label class="form-label small text-muted">Soru Tipi</label>
                     <select class="form-select border-0 bg-light question-type" data-question-id="${id}" onchange="handleTypeChange(${id}, this.value)">
                         <optgroup label="Seçmeli Sorular">
-                            <option value="1" ${type === 1 ? 'selected' : ''}>Tek Seçmeli</option>
-                            <option value="2" ${type === 2 ? 'selected' : ''}>Çok Seçmeli</option>
+                            <option value="SingleChoice" ${type === 'SingleChoice' ? 'selected' : ''}>Tek Seçmeli</option>
+                            <option value="MultipleChoice" ${type === 'MultipleChoice' ? 'selected' : ''}>Çok Seçmeli</option>
                         </optgroup>
                         <optgroup label="Metin Girişi">
-                            <option value="3" ${type === 3 ? 'selected' : ''}>Açık Uçlu (Uzun Metin)</option>
-                            <option value="4" ${type === 4 ? 'selected' : ''}>Kısa Metin</option>
+                            <option value="OpenEnded" ${type === 'OpenEnded' ? 'selected' : ''}>Açık Uçlu (Uzun Metin)</option>
+                            <option value="ShortText" ${type === 'ShortText' ? 'selected' : ''}>Kısa Metin</option>
                         </optgroup>
                         <optgroup label="Medya">
-                            <option value="5" ${type === 5 ? 'selected' : ''}>Resim Eklemeli</option>
-                            <option value="6" ${type === 6 ? 'selected' : ''}>Dosya Yükleme</option>
+                            <option value="ImageUpload" ${type === 'ImageUpload' ? 'selected' : ''}>Resim Eklemeli</option>
+                            <option value="FileUpload" ${type === 'FileUpload' ? 'selected' : ''}>Dosya Yükleme</option>
                         </optgroup>
                         <optgroup label="Sayısal/Tarih">
-                            <option value="7" ${type === 7 ? 'selected' : ''}>Tarih Seçimi</option>
-                            <option value="8" ${type === 8 ? 'selected' : ''}>Sayısal Giriş</option>
+                            <option value="DatePicker" ${type === 'DatePicker' ? 'selected' : ''}>Tarih Seçimi</option>
+                            <option value="Number" ${type === 'Number' ? 'selected' : ''}>Sayısal Giriş</option>
                         </optgroup>
                         <optgroup label="Derecelendirme">
-                            <option value="9" ${type === 9 ? 'selected' : ''}>Derecelendirme (1-5)</option>
-                            <option value="10" ${type === 10 ? 'selected' : ''}>Derecelendirme (1-10)</option>
+                            <option value="Rating5" ${type === 'Rating5' ? 'selected' : ''}>Derecelendirme (1-5)</option>
+                            <option value="Rating10" ${type === 'Rating10' ? 'selected' : ''}>Derecelendirme (1-10)</option>
                         </optgroup>
                     </select>
                 </div>
@@ -220,30 +220,29 @@
 
         const questionHtml = createQuestionHtml(questionCount);
         container.insertAdjacentHTML('beforeend', questionHtml);
-        handleTypeChange(questionCount, 1);
+        handleTypeChange(questionCount, 'SingleChoice');
     }
 
     function handleTypeChange(questionId, type) {
         const optionsContainer = document.getElementById(`options_${questionId}`);
-        const typeInt = parseInt(type);
-        const typeInfo = questionTypes[typeInt];
+        const typeInfo = questionTypes[type];
 
         if (!typeInfo.needsOptions) {
             const descriptions = {
-                3: 'Kullanıcılar uzun metin yazabilir (textarea)',
-                4: 'Kullanıcılar kısa metin girebilir (tek satır)',
-                5: 'Kullanıcılar resim dosyası yükleyebilir (JPG, PNG)',
-                6: 'Kullanıcılar dosya yükleyebilir (PDF, DOC, vb.)',
-                7: 'Kullanıcılar tarih seçebilir',
-                8: 'Kullanıcılar sadece sayı girebilir',
-                9: 'Kullanıcılar 1-5 arası yıldız verebilir',
-                10: 'Kullanıcılar 1-10 arası puan verebilir'
+                'OpenEnded': 'Kullanıcılar uzun metin yazabilir (textarea)',
+                'ShortText': 'Kullanıcılar kısa metin girebilir (tek satır)',
+                'ImageUpload': 'Kullanıcılar resim dosyası yükleyebilir (JPG, PNG)',
+                'FileUpload': 'Kullanıcılar dosya yükleyebilir (PDF, DOC, vb.)',
+                'DatePicker': 'Kullanıcılar tarih seçebilir',
+                'Number': 'Kullanıcılar sadece sayı girebilir',
+                'Rating5': 'Kullanıcılar 1-5 arası yıldız verebilir',
+                'Rating10': 'Kullanıcılar 1-10 arası puan verebilir'
             };
 
             optionsContainer.innerHTML = `
                 <div class="alert alert-info d-flex align-items-center mb-0" role="alert">
                     <i class="bi bi-info-circle me-2"></i>
-                    <div>${descriptions[typeInt]}</div>
+                    <div>${descriptions[type]}</div>
                 </div>
             `;
         } else {
@@ -313,13 +312,13 @@
         const questions = [];
         document.querySelectorAll('.question-card').forEach(card => {
             const questionText = card.querySelector('.question-text').value;
-            const questionType = parseInt(card.querySelector('.question-type').value);
+            const questionType = card.querySelector('.question-type').value; // ✅ Artık string
 
             if (!questionText) return;
 
             const question = {
                 questionText: questionText,
-                type: questionType,
+                type: questionType, // ✅ String olarak gönder
                 options: []
             };
 
@@ -351,7 +350,7 @@
                 alert('✅ Anket başarıyla güncellendi!');
                 window.location.href = '/Survey/Details/@Model.Id';
             } else {
-                alert('❌ Bir hata oluştu!');
+                alert('❌ Bir hata oluştu: ' + (data.message || ''));
             }
         })
         .catch(error => {

@@ -1,4 +1,4 @@
-@model IEnumerable<SurveyApp.Models.Survey>
+@model IEnumerable<SurveyApp.ViewModels.SurveyListViewModel>
 
 @{
     ViewData["Title"] = "Anketlerim";
@@ -73,7 +73,7 @@
                                     </small>
                                     <small class="text-muted">
                                         <i class="bi bi-question-circle me-1"></i>
-                                        @survey.Questions.Count Soru
+                                        @survey.QuestionCount Soru
                                     </small>
                                 </div>
 

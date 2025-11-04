@@ -27,11 +27,16 @@ namespace SurveyApp.Mappings
                 .ForMember(dest => dest.Questions, opt => opt.Ignore())
                 .ForMember(dest => dest.Responses, opt => opt.Ignore());
 
-            // Question Mappings
-            CreateMap<Question, QuestionDetailViewModel>();
-            CreateMap<Question, QuestionTakeViewModel>();
+            // Question Mappings - ✅ Enum'u string'e çevir
+            CreateMap<Question, QuestionDetailViewModel>()
+                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()));
+
+            CreateMap<Question, QuestionTakeViewModel>()
+                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()));
+
             CreateMap<Question, QuestionStatisticsViewModel>()
-                .ForMember(dest => dest.TotalAnswers, opt => opt.MapFrom(src => src.Answers.Count));
+                .ForMember(dest => dest.TotalAnswers, opt => opt.MapFrom(src => src.Answers.Count))
+                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()));
 
             CreateMap<QuestionCreateEditViewModel, Question>()
                 .ForMember(dest => dest.Survey, opt => opt.Ignore())
@@ -40,7 +45,6 @@ namespace SurveyApp.Mappings
                 .ForMember(dest => dest.Answers, opt => opt.Ignore())
                 // 🔧 Enum dönüştürme (string → enum)
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => ConvertQuestionType(src.Type)));
-
 
             // Option Mappings
             CreateMap<Option, OptionViewModel>();
@@ -76,13 +80,12 @@ namespace SurveyApp.Mappings
                 .ForMember(dest => dest.ResponseId, opt => opt.Ignore())
                 .ForMember(dest => dest.AnswerDate, opt => opt.Ignore());
         }
+
         private static QuestionType ConvertQuestionType(string? type)
         {
             if (Enum.TryParse<QuestionType>(type, true, out var parsed))
                 return parsed;
             return QuestionType.SingleChoice;
         }
-
     }
-
 }

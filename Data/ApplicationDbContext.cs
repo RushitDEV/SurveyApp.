@@ -20,47 +20,49 @@ namespace SurveyApp.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Survey - Questions
+            // ✅ Survey - Questions (Cascade)
             modelBuilder.Entity<Survey>()
                 .HasMany(s => s.Questions)
                 .WithOne(q => q.Survey)
                 .HasForeignKey(q => q.SurveyId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // Question - Options
-            modelBuilder.Entity<Question>()
-                .HasMany(q => q.Options)
-                .WithOne(o => o.Question)
-                .HasForeignKey(o => o.QuestionId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Survey - Responses
+            // ✅ Survey - Responses (Cascade)
             modelBuilder.Entity<Survey>()
                 .HasMany(s => s.Responses)
                 .WithOne(r => r.Survey)
                 .HasForeignKey(r => r.SurveyId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // Response - Answers
+            // ✅ Question - Options (Cascade)
+            modelBuilder.Entity<Question>()
+                .HasMany(q => q.Options)
+                .WithOne(o => o.Question)
+                .HasForeignKey(o => o.QuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ✅ Response - Answers (Cascade)
             modelBuilder.Entity<Response>()
                 .HasMany(r => r.Answers)
                 .WithOne(a => a.Response)
                 .HasForeignKey(a => a.ResponseId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // ✅ Question - Answers (önemli kısım)
+            // ⚠️ Question - Answers (Restrict)
+            // Burada Cascade verirsek "multiple cascade path" hatası oluşur.
             modelBuilder.Entity<Question>()
                 .HasMany(q => q.Answers)
                 .WithOne(a => a.Question)
                 .HasForeignKey(a => a.QuestionId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ✅ Option - Answers (isteğe bağlı ilişki)
+            // ✅ Option - Answers (SetNull)
             modelBuilder.Entity<Answer>()
                 .HasOne(a => a.Option)
                 .WithMany()
                 .HasForeignKey(a => a.OptionId)
                 .OnDelete(DeleteBehavior.SetNull);
         }
+
     }
 }

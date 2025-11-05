@@ -177,7 +177,7 @@ namespace SurveyApp.Migrations
                     b.HasOne("SurveyApp.Models.Question", "Question")
                         .WithMany("Options")
                         .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Question");
@@ -199,7 +199,7 @@ namespace SurveyApp.Migrations
                     b.HasOne("SurveyApp.Models.Response", "Response")
                         .WithMany("Answers")
                         .HasForeignKey("ResponseId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Option");
@@ -214,7 +214,7 @@ namespace SurveyApp.Migrations
                     b.HasOne("SurveyApp.Models.Survey", "Survey")
                         .WithMany("Questions")
                         .HasForeignKey("SurveyId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Survey");
@@ -225,7 +225,7 @@ namespace SurveyApp.Migrations
                     b.HasOne("SurveyApp.Models.Survey", "Survey")
                         .WithMany("Responses")
                         .HasForeignKey("SurveyId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Survey");

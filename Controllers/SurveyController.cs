@@ -240,11 +240,37 @@ namespace SurveyApp.Controllers
         {
             try
             {
-                var survey = await _unitOfWork.Surveys.GetByIdAsync(id);
-                if (survey == null)
-                    return NotFound();
+                var survey = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
+                    s => s.Id == id,
+                    s => s.Questions,
+                    s => s.Responses
+                );
 
-                _unitOfWork.Surveys.Delete(survey);
+                var surveyEntity = survey.FirstOrDefault();
+                if (surveyEntity == null)
+                    return Json(new { success = false, message = "Anket bulunamadı" });
+
+                // İlişkili Questions ve Responses altındaki verileri de yükle
+                foreach (var question in surveyEntity.Questions)
+                {
+                    var options = await _unitOfWork.Options.GetWhereAsync(o => o.QuestionId == question.Id);
+                    question.Options = options.ToList();
+                }
+
+                foreach (var response in surveyEntity.Responses)
+                {
+                    var answers = await _unitOfWork.Answers.GetWhereAsync(a => a.ResponseId == response.Id);
+                    response.Answers = answers.ToList();
+                }
+
+                // Önce alt ilişkileri sil
+                _unitOfWork.Answers.DeleteRange(surveyEntity.Responses.SelectMany(r => r.Answers));
+                _unitOfWork.Options.DeleteRange(surveyEntity.Questions.SelectMany(q => q.Options));
+                _unitOfWork.Questions.DeleteRange(surveyEntity.Questions);
+                _unitOfWork.Responses.DeleteRange(surveyEntity.Responses);
+
+                // En son anketi sil
+                _unitOfWork.Surveys.Delete(surveyEntity);
                 await _unitOfWork.SaveChangesAsync();
 
                 return Json(new { success = true });
@@ -254,5 +280,6 @@ namespace SurveyApp.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
     }
 }

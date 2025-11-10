@@ -6,8 +6,6 @@
     <title>@ViewData["Title"] - SurveyApp</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
         :root {
@@ -64,73 +62,70 @@
 </head>
 <body>
     <header>
-        <!-- ✅ Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
             <div class="container">
-                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-bar-chart-line me-2"></i>SurveyApp
+                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-clipboard-data me-2 fs-4"></i>
+                    SurveyApp
                 </a>
-
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <ul class="navbar-nav ms-auto align-items-center">
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Survey" asp-action="Index">Anketler</a>
+                            <a class="nav-link" href="#features">Özellikler</a>
                         </li>
-                    </ul>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#how-it-works">Nasıl Çalışır</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#pricing">Fiyatlandırma</a>
+                        </li>
 
-                    <div class="d-flex align-items-center">
-                        @if (User.Identity?.IsAuthenticated == true)
+                        @if (User?.Identity?.IsAuthenticated ?? false)
                         {
-                            <!-- ✅ Kullanıcı giriş yapmışsa -->
-                            <div class="dropdown">
-                                <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <li class="nav-item dropdown ms-3">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                                     <i class="bi bi-person-circle me-1"></i> @User.Identity.Name
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
                                     <li>
                                         <a class="dropdown-item" asp-controller="Survey" asp-action="Index">
-                                            <i class="bi bi-list-ul me-2"></i> Anketlerim
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Survey" asp-action="Create">
-                                            <i class="bi bi-plus-circle me-2"></i> Anket Oluştur
+                                            <i class="bi bi-list-ul me-2"></i>Anketlerim
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider" /></li>
                                     <li>
-                                        <form asp-controller="Auth" asp-action="Logout" method="post" class="m-0">
-                                            <button type="submit" class="dropdown-item text-danger">
-                                                <i class="bi bi-box-arrow-right me-2"></i> Çıkış Yap
+                                        <form asp-controller="Auth" asp-action="Logout" method="post" class="dropdown-item p-0">
+                                            <button type="submit" class="btn btn-link text-start w-100 text-danger">
+                                                <i class="bi bi-box-arrow-right me-2"></i>Çıkış Yap
                                             </button>
                                         </form>
                                     </li>
                                 </ul>
-                            </div>
+                            </li>
                         }
                         else
                         {
-                            <!-- ✅ Kullanıcı giriş yapmamışsa -->
-                            <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-light me-2">
-                                <i class="bi bi-box-arrow-in-right me-1"></i> Giriş Yap
-                            </a>
-                            <a asp-controller="Auth" asp-action="Register" class="btn btn-light text-primary fw-bold">
-                                <i class="bi bi-person-plus me-1"></i> Kayıt Ol
-                            </a>
+                            <li class="nav-item ms-3">
+                                <a class="btn btn-outline-primary px-4" asp-controller="Auth" asp-action="Login">
+                                    Giriş Yap
+                                </a>
+                            </li>
+                            <li class="nav-item ms-2">
+                                <a class="btn btn-primary-gradient" asp-controller="Auth" asp-action="Register">
+                                    Ücretsiz Başla
+                                </a>
+                            </li>
                         }
-                    </div>
+                    </ul>
                 </div>
             </div>
         </nav>
-
     </header>
 
     <div style="margin-top: 80px;">

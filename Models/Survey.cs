@@ -8,6 +8,8 @@
         public DateTime CreatedDate { get; set; }
         public DateTime? EndDate { get; set; }
         public bool IsActive { get; set; }
+        public int? CreatedByUserId { get; set; }
+        public User? CreatedBy { get; set; }
 
         // İlişkiler
         public List<Question> Questions { get; set; } = new List<Question>();

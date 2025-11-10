@@ -3,6 +3,8 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using SurveyApp.Models;
 using SurveyApp.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization; // ✅ EKLENDI
+using System.Security.Claims; // ✅ EKLENDI
 
 namespace SurveyApp.Controllers
 {
@@ -17,7 +19,7 @@ namespace SurveyApp.Controllers
             _mapper = mapper;
         }
 
-        // GET: Survey/Index - Anket listesi
+        // GET: Survey/Index - Anket listesi (herkes görebilir)
         public async Task<IActionResult> Index()
         {
             var surveys = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
@@ -31,17 +33,22 @@ namespace SurveyApp.Controllers
         }
 
         // GET: Survey/Create - Yeni anket oluşturma sayfası
+        [Authorize] // ✅ Sadece giriş yapmış kullanıcılar
         public IActionResult Create()
         {
             return View();
         }
 
         // POST: Survey/Create - Yeni anket kaydetme
+        [Authorize] // ✅ EKLENDI
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] SurveyCreateEditViewModel model)
         {
             try
             {
+                // ✅ Giriş yapmış kullanıcının ID'sini al
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
                 var survey = new Survey
                 {
                     Title = model.Title,
@@ -49,6 +56,7 @@ namespace SurveyApp.Controllers
                     EndDate = model.EndDate,
                     IsActive = model.IsActive,
                     CreatedDate = DateTime.Now,
+                    CreatedByUserId = userId, // ✅ EKLENDI
                     Questions = new List<Question>()
                 };
 
@@ -57,7 +65,6 @@ namespace SurveyApp.Controllers
                     int order = 1;
                     foreach (var q in model.Questions)
                     {
-                        // Güvenli enum dönüşümü
                         Enum.TryParse<QuestionType>(q.Type, out var questionType);
 
                         var question = new Question
@@ -95,7 +102,7 @@ namespace SurveyApp.Controllers
             }
         }
 
-        // GET: Survey/Details/5 - Anket detayları
+        // GET: Survey/Details/5 - Anket detayları (herkes görebilir)
         public async Task<IActionResult> Details(int id)
         {
             var survey = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
@@ -121,6 +128,7 @@ namespace SurveyApp.Controllers
         }
 
         // GET: Survey/Edit/5 - Anket düzenleme sayfası
+        [Authorize] // ✅ EKLENDI
         public async Task<IActionResult> Edit(int id)
         {
             var survey = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
@@ -149,14 +157,14 @@ namespace SurveyApp.Controllers
                 {
                     Id = q.Id,
                     QuestionText = q.QuestionText,
-                    Type = q.Type.ToString(), // ✅ Enum → string
+                    Type = q.Type.ToString(),
                     Order = q.Order,
                     IsRequired = q.IsRequired,
                     Options = q.Options.Select(o => new OptionViewModel
                     {
                         Id = o.Id,
                         OptionText = o.OptionText
-                    }).ToList() // ✅ string yerine OptionViewModel listesi
+                    }).ToList()
                 }).ToList()
             };
 
@@ -164,6 +172,7 @@ namespace SurveyApp.Controllers
         }
 
         // POST: Survey/Edit/5 - Anket güncelleme
+        [Authorize] // ✅ EKLENDI
         [HttpPost]
         public async Task<IActionResult> Edit(int id, [FromBody] SurveyCreateEditViewModel model)
         {
@@ -235,6 +244,7 @@ namespace SurveyApp.Controllers
         }
 
         // POST: Survey/Delete/5 - Anket silme
+        [Authorize] // ✅ EKLENDI
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
@@ -250,7 +260,6 @@ namespace SurveyApp.Controllers
                 if (surveyEntity == null)
                     return Json(new { success = false, message = "Anket bulunamadı" });
 
-                // İlişkili Questions ve Responses altındaki verileri de yükle
                 foreach (var question in surveyEntity.Questions)
                 {
                     var options = await _unitOfWork.Options.GetWhereAsync(o => o.QuestionId == question.Id);
@@ -263,13 +272,11 @@ namespace SurveyApp.Controllers
                     response.Answers = answers.ToList();
                 }
 
-                // Önce alt ilişkileri sil
                 _unitOfWork.Answers.DeleteRange(surveyEntity.Responses.SelectMany(r => r.Answers));
                 _unitOfWork.Options.DeleteRange(surveyEntity.Questions.SelectMany(q => q.Options));
                 _unitOfWork.Questions.DeleteRange(surveyEntity.Questions);
                 _unitOfWork.Responses.DeleteRange(surveyEntity.Responses);
 
-                // En son anketi sil
                 _unitOfWork.Surveys.Delete(surveyEntity);
                 await _unitOfWork.SaveChangesAsync();
 
@@ -280,6 +287,5 @@ namespace SurveyApp.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
-
     }
 }

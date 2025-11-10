@@ -15,5 +15,7 @@ namespace SurveyApp.Models
         // Navigation properties
         public Survey Survey { get; set; } = null!;
         public List<Answer> Answers { get; set; } = new();
+        public int? UserId { get; set; }
+        public User? User { get; set; }
     }
 }

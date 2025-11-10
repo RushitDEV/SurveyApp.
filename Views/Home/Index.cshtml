@@ -14,9 +14,21 @@
                     Dakikalar içinde profesyonel anketler oluşturun, müşterilerinizden geri bildirim alın ve veriye dayalı kararlar verin.
                 </p>
                 <div class="d-flex gap-3 flex-wrap" data-aos="fade-up" data-aos-delay="200">
-                    <a asp-controller="Survey" asp-action="Create" class="btn btn-light btn-lg px-5 shadow">
-                        <i class="bi bi-plus-circle me-2"></i>Ücretsiz Başla
-                    </a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <!-- Giriş yapılmışsa doğrudan anket oluştur -->
+                        <a asp-controller="Survey" asp-action="Create" class="btn btn-light btn-lg px-5 shadow">
+                            <i class="bi bi-plus-circle me-2"></i>Ücretsiz Başla
+                        </a>
+                    }
+                    else
+                    {
+                        <!-- Giriş yapılmamışsa login sayfasına yönlendir -->
+                        <a asp-controller="Auth" asp-action="Login" class="btn btn-light btn-lg px-5 shadow">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Giriş Yap / Ücretsiz Başla
+                        </a>
+                    }
+
                     <a href="#how-it-works" class="btn btn-outline-light btn-lg px-5">
                         Nasıl Çalışır?
                     </a>

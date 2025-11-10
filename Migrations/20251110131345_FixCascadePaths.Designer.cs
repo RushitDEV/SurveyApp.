@@ -12,8 +12,8 @@ using SurveyApp.Data;
 namespace SurveyApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251105004402_InitialsDB")]
-    partial class InitialsDB
+    [Migration("20251110131345_FixCascadePaths")]
+    partial class FixCascadePaths
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -135,12 +135,17 @@ namespace SurveyApp.Migrations
                     b.Property<int>("SurveyId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
                     b.Property<string>("UserIp")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("SurveyId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Responses");
                 });
@@ -152,6 +157,9 @@ namespace SurveyApp.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -172,7 +180,50 @@ namespace SurveyApp.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedByUserId");
+
                     b.ToTable("Surveys");
+                });
+
+            modelBuilder.Entity("SurveyApp.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Option", b =>
@@ -202,7 +253,7 @@ namespace SurveyApp.Migrations
                     b.HasOne("SurveyApp.Models.Response", "Response")
                         .WithMany("Answers")
                         .HasForeignKey("ResponseId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Option");
@@ -231,7 +282,24 @@ namespace SurveyApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SurveyApp.Models.User", "User")
+                        .WithMany("Responses")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Survey");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SurveyApp.Models.Survey", b =>
+                {
+                    b.HasOne("SurveyApp.Models.User", "CreatedBy")
+                        .WithMany("Surveys")
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("CreatedBy");
                 });
 
             modelBuilder.Entity("SurveyApp.Models.Question", b =>
@@ -251,6 +319,13 @@ namespace SurveyApp.Migrations
                     b.Navigation("Questions");
 
                     b.Navigation("Responses");
+                });
+
+            modelBuilder.Entity("SurveyApp.Models.User", b =>
+                {
+                    b.Navigation("Responses");
+
+                    b.Navigation("Surveys");
                 });
 #pragma warning restore 612, 618
         }

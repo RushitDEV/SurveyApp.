@@ -1,4 +1,4 @@
-@model SurveyApp.ViewModels.SurveyDetailViewModel
+﻿@model SurveyApp.ViewModels.SurveyDetailViewModel
 @using SurveyApp.ViewModels
 
 @{
@@ -23,7 +23,7 @@
                 </div>
                 <div>
                     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary me-2">
-                        <i class="bi bi-pencil me-2"></i>D�zenle
+                        <i class="bi bi-pencil me-2"></i>Düzenle
                     </a>
                     <button type="button" class="btn btn-outline-danger" onclick="deleteSurvey(@Model.Id)">
                         <i class="bi bi-trash me-2"></i>Sil
@@ -40,7 +40,7 @@
                 <div class="card shadow-sm text-center">
                     <div class="card-body">
                         <i class="bi bi-calendar3 text-primary" style="font-size: 2rem;"></i>
-                        <p class="small text-muted mt-2 mb-0">Olu�turma Tarihi</p>
+                        <p class="small text-muted mt-2 mb-0">Oluşturma Tarihi</p>
                         <p class="fw-bold mb-0">@Model.CreatedDate.ToString("dd MMM yyyy")</p>
                     </div>
                 </div>
@@ -58,7 +58,7 @@
                 <div class="card shadow-sm text-center">
                     <div class="card-body">
                         <i class="bi bi-people text-info" style="font-size: 2rem;"></i>
-                        <p class="small text-muted mt-2 mb-0">Yan�t</p>
+                        <p class="small text-muted mt-2 mb-0">Yanıt</p>
                         <p class="fw-bold mb-0">@responseCount</p>
                     </div>
                 </div>
@@ -91,8 +91,13 @@
                 </button>
             </li>
             <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#statistics" type="button">
+                    <i class="bi bi-bar-chart me-2"></i>İstatistikler
+                </button>
+            </li>
+            <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#responses" type="button">
-                    <i class="bi bi-bar-chart me-2"></i>Yan�tlar (@responseCount)
+                    <i class="bi bi-chat-left-text me-2"></i>Yanıtlar (@responseCount)
                 </button>
             </li>
         </ul>
@@ -138,20 +143,20 @@
                         {
                             <div class="text-center py-5 text-muted">
                                 <i class="bi bi-question-circle" style="font-size: 3rem;"></i>
-                                <p class="mt-3">Bu ankette hen�z soru bulunmuyor.</p>
+                                <p class="mt-3">Bu ankette henüz soru bulunmuyor.</p>
                             </div>
                         }
                     </div>
                 </div>
             </div>
 
-            <!-- Yan�tlar -->
-            <div class="tab-pane fade" id="responses">
+            <!-- İstatistikler -->
+            <div class="tab-pane fade" id="statistics">
                 @if (responses.Any())
                 {
                     <div class="card shadow-sm mb-4">
                         <div class="card-header bg-white">
-                            <h5 class="fw-bold mb-0">Soru Bazl� �statistikler</h5>
+                            <h5 class="fw-bold mb-0">Soru Bazlı İstatistikler</h5>
                         </div>
                         <div class="card-body p-4">
                             @foreach (var question in Model.Questions.OrderBy(q => q.Order))
@@ -161,25 +166,44 @@
                                 .Where(a => a.QuestionId == question.Id)
                                 .ToList();
 
-                                <div class="mb-4">
-                                    <h6>@question.QuestionText</h6>
-                                    <span class="text-muted small">@answers.Count yan�t</span>
+                                <div class="mb-4 pb-4 border-bottom">
+                                    <h6 class="mb-3">
+                                        <span class="badge bg-primary me-2">@question.Order</span>
+                                        @question.QuestionText
+                                    </h6>
+                                    <span class="text-muted small">@answers.Count yanıt</span>
 
                                     @if (question.Options?.Any() == true)
                                     {
-                                        <div class="ms-5">
+                                        <div class="mt-3">
                                             @foreach (var option in question.Options)
                                             {
                                                 var count = answers.Count(a => a.OptionId == option.Id);
                                                 var percent = answers.Any() ? (count * 100.0 / answers.Count) : 0;
                                                 <div class="mb-3">
-                                                    <div class="d-flex justify-content-between">
+                                                    <div class="d-flex justify-content-between mb-1">
                                                         <span>@option.OptionText</span>
                                                         <span class="text-muted">@count (@percent.ToString("0.0")%)</span>
                                                     </div>
-                                                    <div class="progress" style="height: 20px;">
-                                                        <div class="progress-bar bg-primary" style="width:@percent%"></div>
+                                                    <div class="progress" style="height: 25px;">
+                                                        <div class="progress-bar bg-primary" style="width:@percent%">
+                                                            @if (percent > 10)
+                                                            {
+                                                                <span>@count kişi</span>
+                                                            }
+                                                        </div>
                                                     </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="mt-3">
+                                            @foreach (var answer in answers.Where(a => !string.IsNullOrEmpty(a.AnswerText)))
+                                            {
+                                                <div class="alert alert-light mb-2">
+                                                    <i class="bi bi-chat-quote me-2"></i>@answer.AnswerText
                                                 </div>
                                             }
                                         </div>
@@ -194,9 +218,103 @@
                     <div class="card shadow-sm">
                         <div class="card-body text-center py-5">
                             <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
-                            <p class="mt-3 text-muted">Hen�z yan�t bulunmuyor</p>
+                            <p class="mt-3 text-muted">Henüz yanıt bulunmuyor</p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- ✅ Detaylı Yanıtlar -->
+            <div class="tab-pane fade" id="responses">
+                @if (responses.Any())
+                {
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold mb-0">Tüm Yanıtlar</h5>
+                            <span class="badge bg-primary">@responseCount Yanıt</span>
+                        </div>
+                        <div class="card-body p-0">
+                            @foreach (var response in responses.OrderByDescending(r => r.CreatedAt))
+                            {
+                                <div class="border-bottom p-4">
+                                    <!-- Yanıt Başlığı -->
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                <i class="bi bi-person-circle text-primary me-2"></i>
+                                                Yanıt #@response.Id
+                                            </h6>
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock me-1"></i>
+                                                @response.CreatedAt.ToString("dd MMMM yyyy HH:mm")
+                                            </small>
+                                        </div>
+                                        <div>
+                                            @if (response.UserId.HasValue)
+                                            {
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-person-check me-1"></i>Kayıtlı Kullanıcı
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">
+                                                    <i class="bi bi-incognito me-1"></i>Anonim
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <!-- Cevaplar -->
+                                    <div class="ms-4">
+                                        @foreach (var question in Model.Questions.OrderBy(q => q.Order))
+                                        {
+                                            var answer = response.Answers.FirstOrDefault(a => a.QuestionId == question.Id);
+
+                                            @if (answer != null)
+                                            {
+                                                <div class="mb-3">
+                                                    <div class="d-flex align-items-start">
+                                                        <span class="badge bg-light text-dark me-2">@question.Order</span>
+                                                        <div class="flex-grow-1">
+                                                            <strong class="d-block mb-1">@question.QuestionText</strong>
+                                                            <div class="text-muted">
+                                                                @if (!string.IsNullOrEmpty(answer.OptionText))
+                                                                {
+                                                                    <i class="bi bi-check-circle-fill text-success me-1"></i>
+                                                                    <span>@answer.OptionText</span>
+                                                                }
+                                                                else if (!string.IsNullOrEmpty(answer.AnswerText))
+                                                                {
+                                                                    <i class="bi bi-chat-left-quote me-1"></i>
+                                                                    <span class="fst-italic">"@answer.AnswerText"</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="text-danger">
+                                                                        <i class="bi bi-x-circle me-1"></i>Cevap verilmedi
+                                                                    </span>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center py-5">
+                            <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+                            <p class="mt-3 text-muted">Henüz yanıt bulunmuyor</p>
                             <a href="/Response/TakeSurvey/@Model.Id" class="btn btn-primary" target="_blank">
-                                <i class="bi bi-pencil-square me-2"></i>�lk Yan�t� Ver
+                                <i class="bi bi-pencil-square me-2"></i>İlk Yanıtı Ver
                             </a>
                         </div>
                     </div>
@@ -208,11 +326,44 @@
 
 <script>
     function deleteSurvey(id) {
-        if (confirm('Bu anketi silmek istedi�inizden emin misiniz?')) {
+        if (confirm('Bu anketi silmek istediğinizden emin misiniz?')) {
             fetch('/Survey/Delete/' + id, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
                 .then(r => r.json())
-                .then(d => { if (d.success) window.location.href = '/Survey/Index'; else alert('Silme i�lemi ba�ar�s�z!'); })
-                .catch(e => alert('Bir hata olu�tu: ' + e));
+                .then(d => { if (d.success) window.location.href = '/Survey/Index'; else alert('Silme işlemi başarısız!'); })
+                .catch(e => alert('Bir hata oluştu: ' + e));
         }
     }
 </script>
+
+<style>
+    .progress {
+        border-radius: 0.5rem;
+    }
+
+    .progress-bar {
+        transition: width 0.6s ease;
+        font-size: 0.85rem;
+    }
+
+    .badge {
+        font-weight: 500;
+    }
+
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        border: none;
+        border-bottom: 3px solid transparent;
+        padding: 1rem 1.5rem;
+    }
+
+        .nav-tabs .nav-link:hover {
+            border-color: #e9ecef;
+            color: #495057;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #0d6efd;
+            border-color: #0d6efd;
+            background: transparent;
+        }
+</style>

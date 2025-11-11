@@ -79,6 +79,17 @@ namespace SurveyApp.Mappings
                 .ForMember(dest => dest.Option, opt => opt.Ignore())
                 .ForMember(dest => dest.ResponseId, opt => opt.Ignore())
                 .ForMember(dest => dest.AnswerDate, opt => opt.Ignore());
+            // Answer -> AnswerSubmitViewModel mapping'i (ResponseController'da kullanılıyor olabilir)
+            CreateMap<Answer, AnswerSubmitViewModel>()
+                .ForMember(dest => dest.OptionIds, opt => opt.Ignore());
+
+            CreateMap<AnswerSubmitViewModel, Answer>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Response, opt => opt.Ignore())
+                .ForMember(dest => dest.Question, opt => opt.Ignore())
+                .ForMember(dest => dest.Option, opt => opt.Ignore())
+                .ForMember(dest => dest.ResponseId, opt => opt.Ignore())
+                .ForMember(dest => dest.AnswerDate, opt => opt.Ignore());
         }
 
         private static QuestionType ConvertQuestionType(string? type)

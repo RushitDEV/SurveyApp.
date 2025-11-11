@@ -9,17 +9,22 @@ namespace SurveyApp.ViewModels
         public int Id { get; set; }
         public string UserIp { get; set; } = string.Empty;
         public DateTime? CompletedDate { get; set; }
-        public int AnswerCount { get; set; }  // ✅ Eksik olan alan eklendi
+        public int AnswerCount { get; set; }
     }
 
     // Detay görünümü için
     public class ResponseDetailViewModel
     {
         public int Id { get; set; }
-        public string? SurveyTitle { get; set; }   // ✅ kullanılıyor AutoMapperProfile’da
+        public int SurveyId { get; set; }
+        public string? SurveyTitle { get; set; }
+        public int? UserId { get; set; }
         public string UserIp { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
         public DateTime? CompletedDate { get; set; }
-        public List<AnswerSubmitViewModel> Answers { get; set; } = new();
+
+        // ✅ AnswerDetailViewModel olmalı, AnswerSubmitViewModel değil!
+        public List<AnswerDetailViewModel> Answers { get; set; } = new();
     }
 
     // Anket yanıtı gönderimi için
@@ -29,7 +34,7 @@ namespace SurveyApp.ViewModels
         public List<AnswerSubmitViewModel> Answers { get; set; } = new();
     }
 
-    // ✅ Eksik olan AnswerSubmitViewModel (ResponseController bunu kullanıyor)
+    // Anket cevabı gönderme (submit)
     public class AnswerSubmitViewModel
     {
         public int QuestionId { get; set; }

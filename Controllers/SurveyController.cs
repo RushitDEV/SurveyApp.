@@ -3,8 +3,8 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using SurveyApp.Models;
 using SurveyApp.Repositories.Interfaces;
-using Microsoft.AspNetCore.Authorization; // ✅ EKLENDI
-using System.Security.Claims; // ✅ EKLENDI
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace SurveyApp.Controllers
 {
@@ -19,34 +19,50 @@ namespace SurveyApp.Controllers
             _mapper = mapper;
         }
 
-        // GET: Survey/Index - Anket listesi (herkes görebilir)
+        // ✅ GET: Survey/Index - Sadece kullanıcının kendi anketleri
+        [Authorize]
         public async Task<IActionResult> Index()
         {
+            // Giriş yapmış kullanıcının ID'sini al
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            // ✅ DEBUG: Console'a yazdır
+            Console.WriteLine($"💡 Giriş yapan kullanıcı ID: {userId}");
+
+            // Sadece bu kullanıcının anketlerini getir
             var surveys = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
-                s => true,
+                s => s.CreatedByUserId == userId, // ✅ BURASI DEĞİŞTİ
                 s => s.Questions,
                 s => s.Responses
             );
+
+            // ✅ DEBUG: Kaç anket bulundu
+            Console.WriteLine($"💡 Bulunan anket sayısı: {surveys.Count()}");
+
+            // ✅ DEBUG: Her anketin sahibini yazdır
+            foreach (var survey in surveys)
+            {
+                Console.WriteLine($"   - Anket: {survey.Title}, Sahibi: {survey.CreatedByUserId}");
+            }
 
             var viewModel = _mapper.Map<List<SurveyListViewModel>>(surveys);
             return View(viewModel);
         }
 
         // GET: Survey/Create - Yeni anket oluşturma sayfası
-        [Authorize] // ✅ Sadece giriş yapmış kullanıcılar
+        [Authorize]
         public IActionResult Create()
         {
             return View();
         }
 
         // POST: Survey/Create - Yeni anket kaydetme
-        [Authorize] // ✅ EKLENDI
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] SurveyCreateEditViewModel model)
         {
             try
             {
-                // ✅ Giriş yapmış kullanıcının ID'sini al
                 var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
                 var survey = new Survey
@@ -56,7 +72,7 @@ namespace SurveyApp.Controllers
                     EndDate = model.EndDate,
                     IsActive = model.IsActive,
                     CreatedDate = DateTime.Now,
-                    CreatedByUserId = userId, // ✅ EKLENDI
+                    CreatedByUserId = userId,
                     Questions = new List<Question>()
                 };
 
@@ -127,18 +143,20 @@ namespace SurveyApp.Controllers
             return View(viewModel);
         }
 
-        // GET: Survey/Edit/5 - Anket düzenleme sayfası
-        [Authorize] // ✅ EKLENDI
+        // ✅ GET: Survey/Edit/5 - Sadece kendi anketini düzenleyebilir
+        [Authorize]
         public async Task<IActionResult> Edit(int id)
         {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
             var survey = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
-                s => s.Id == id,
+                s => s.Id == id && s.CreatedByUserId == userId, // ✅ YETKİ KONTROLÜ EKLENDİ
                 s => s.Questions
             );
 
             var surveyEntity = survey.FirstOrDefault();
             if (surveyEntity == null)
-                return NotFound();
+                return NotFound(); // veya Forbid() kullanabilirsiniz
 
             foreach (var question in surveyEntity.Questions)
             {
@@ -171,21 +189,23 @@ namespace SurveyApp.Controllers
             return View(viewModel);
         }
 
-        // POST: Survey/Edit/5 - Anket güncelleme
-        [Authorize] // ✅ EKLENDI
+        // ✅ POST: Survey/Edit/5 - Sadece kendi anketini güncelleyebilir
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Edit(int id, [FromBody] SurveyCreateEditViewModel model)
         {
             try
             {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
                 var survey = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
-                    s => s.Id == id,
+                    s => s.Id == id && s.CreatedByUserId == userId, // ✅ YETKİ KONTROLÜ EKLENDİ
                     s => s.Questions
                 );
 
                 var surveyEntity = survey.FirstOrDefault();
                 if (surveyEntity == null)
-                    return NotFound();
+                    return Json(new { success = false, message = "Anket bulunamadı veya yetkiniz yok" });
 
                 foreach (var question in surveyEntity.Questions)
                 {
@@ -243,22 +263,24 @@ namespace SurveyApp.Controllers
             }
         }
 
-        // POST: Survey/Delete/5 - Anket silme
-        [Authorize] // ✅ EKLENDI
+        // ✅ POST: Survey/Delete/5 - Sadece kendi anketini silebilir
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
             try
             {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
                 var survey = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
-                    s => s.Id == id,
+                    s => s.Id == id && s.CreatedByUserId == userId, // ✅ YETKİ KONTROLÜ EKLENDİ
                     s => s.Questions,
                     s => s.Responses
                 );
 
                 var surveyEntity = survey.FirstOrDefault();
                 if (surveyEntity == null)
-                    return Json(new { success = false, message = "Anket bulunamadı" });
+                    return Json(new { success = false, message = "Anket bulunamadı veya yetkiniz yok" });
 
                 foreach (var question in surveyEntity.Questions)
                 {

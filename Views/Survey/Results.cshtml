@@ -1,0 +1,74 @@
+﻿@model SurveyApp.Models.Survey
+
+@{
+    ViewData["Title"] = "Anket Sonuçları";
+}
+
+<div class="container py-5">
+    <h2 class="fw-bold mb-4">@ViewBag.Title</h2>
+
+    <div class="mb-4">
+        <span class="badge bg-primary">Toplam Yanıt: @ViewBag.TotalResponses</span>
+    </div>
+
+    @if (Model.Responses == null || !Model.Responses.Any())
+    {
+        <div class="alert alert-info">
+            Bu ankete henüz hiç yanıt verilmemiş.
+        </div>
+    }
+    else
+    {
+        <div class="accordion" id="responseAccordion">
+            @foreach (var response in Model.Responses)
+            {
+                <div class="accordion-item mb-3">
+                    <h2 class="accordion-header" id="heading-@response.Id">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapse-@response.Id" aria-expanded="false">
+                            Yanıt ID: @response.Id — <small class="ms-2 text-muted">@response.CreatedAt.ToShortDateString()</small>
+                        </button>
+                    </h2>
+                    <div id="collapse-@response.Id" class="accordion-collapse collapse"
+                         data-bs-parent="#responseAccordion">
+                        <div class="accordion-body">
+                            @foreach (var question in Model.Questions)
+                            {
+                                var answer = response.Answers.FirstOrDefault(a => a.QuestionId == question.Id);
+                                <div class="mb-3">
+                                    <p class="fw-bold">@question.QuestionText</p>
+                                    <p>
+                                        @if (answer != null)
+                                        {
+                                            if (!string.IsNullOrEmpty(answer.AnswerText))
+                                            {
+                                                @answer.AnswerText
+                                            }
+                                            else if (answer.OptionId.HasValue)
+                                            {
+                                                var opt = question.Options.FirstOrDefault(o => o.Id == answer.OptionId);
+                                                @opt?.OptionText
+                                            }
+                                            else if (answer.RatingValue.HasValue)
+                                            {
+                                                <span>@answer.RatingValue ★</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Boş</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Cevap yok</span>
+                                        }
+                                    </p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

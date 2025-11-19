@@ -12,7 +12,10 @@ namespace SurveyApp.Mappings
             // Survey Mappings
             CreateMap<Survey, SurveyListViewModel>()
                 .ForMember(dest => dest.QuestionCount, opt => opt.MapFrom(src => src.Questions.Count))
-                .ForMember(dest => dest.ResponseCount, opt => opt.MapFrom(src => src.Responses.Count));
+                .ForMember(dest => dest.ResponseCount, opt => opt.MapFrom(src => src.Responses.Count))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy != null ? src.CreatedBy.Username : ""));
+
+
 
             CreateMap<Survey, SurveyDetailViewModel>()
                 .ForMember(dest => dest.ResponseCount, opt => opt.MapFrom(src => src.Responses.Count));

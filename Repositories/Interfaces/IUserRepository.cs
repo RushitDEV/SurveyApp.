@@ -10,5 +10,8 @@ namespace SurveyApp.Repositories.Interfaces
         Task<User> CreateAsync(User user);
         Task<bool> UsernameExistsAsync(string username);
         Task<bool> EmailExistsAsync(string email);
+        Task<IEnumerable<User>> GetAllUsersAsync();
+        Task UpdateAsync(User user);
+        Task DeleteAsync(int id);
     }
 }

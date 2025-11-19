@@ -1,0 +1,266 @@
+﻿@model SurveyApp.ViewModels.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Paneli";
+}
+
+<div class="container-fluid p-0 bg-light min-vh-100">
+    <!-- Header -->
+    <div class="bg-gradient text-white py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <h2 class="mb-0 fw-bold">
+                <i class="bi bi-speedometer2 me-2 text-black">
+                    <p 
+                        Admin Paneli
+                    </p>
+                </i>            </h2>
+            <p class="mb-0 opacity-75 text-black">Sistem geneli yönetim ve istatistikler</p>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        <!-- İstatistik Kartları -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex p-3 mb-3">
+                            <i class="bi bi-people fs-1 text-primary"></i>
+                        </div>
+                        <h3 class="fw-bold mb-1">@Model.TotalUsers</h3>
+                        <p class="text-muted mb-0">Toplam Kullanıcı</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-success bg-opacity-10 d-inline-flex p-3 mb-3">
+                            <i class="bi bi-clipboard-data fs-1 text-success"></i>
+                        </div>
+                        <h3 class="fw-bold mb-1">@Model.TotalSurveys</h3>
+                        <p class="text-muted mb-0">Toplam Anket</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-info bg-opacity-10 d-inline-flex p-3 mb-3">
+                            <i class="bi bi-check-circle fs-1 text-info"></i>
+                        </div>
+                        <h3 class="fw-bold mb-1">@Model.ActiveSurveys</h3>
+                        <p class="text-muted mb-0">Aktif Anket</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-warning bg-opacity-10 d-inline-flex p-3 mb-3">
+                            <i class="bi bi-chat-left-text fs-1 text-warning"></i>
+                        </div>
+                        <h3 class="fw-bold mb-1">@Model.TotalResponses</h3>
+                        <p class="text-muted mb-0">Toplam Yanıt</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hızlı Erişim -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <a asp-action="Users" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm hover-card h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-people-fill fs-1 text-primary me-3"></i>
+                                <div>
+                                    <h5 class="mb-1 fw-bold">Kullanıcılar</h5>
+                                    <p class="text-muted mb-0 small">Kullanıcı yönetimi</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-4">
+                <a asp-action="Surveys" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm hover-card h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-list-check fs-1 text-success me-3"></i>
+                                <div>
+                                    <h5 class="mb-1 fw-bold">Anketler</h5>
+                                    <p class="text-muted mb-0 small">Tüm anketleri görüntüle</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-4">
+                <a asp-action="Statistics" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm hover-card h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-graph-up fs-1 text-info me-3"></i>
+                                <div>
+                                    <h5 class="mb-1 fw-bold">İstatistikler</h5>
+                                    <p class="text-muted mb-0 small">Detaylı raporlar</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Son Anketler ve Kullanıcılar -->
+        <div class="row g-4">
+            <!-- Son Anketler -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 fw-bold">Son Anketler</h5>
+                            <a asp-action="Surveys" class="btn btn-sm btn-outline-primary">Tümünü Gör</a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (Model.RecentSurveys.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Başlık</th>
+                                            <th>Oluşturan</th>
+                                            <th class="text-center">Sorular</th>
+                                            <th class="text-center">Yanıtlar</th>
+                                            <th class="text-center">Durum</th>
+                                            <th class="text-center">İşlem</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var survey in Model.RecentSurveys)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <div class="fw-bold">@survey.Title</div>
+                                                    <small class="text-muted">@survey.CreatedDate.ToString("dd MMM yyyy")</small>
+                                                </td>
+                                                <td>@(string.IsNullOrEmpty(survey.CreatedBy) ? "Bilinmiyor" : survey.CreatedBy)</td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-light text-dark">@survey.QuestionCount</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-primary">@survey.ResponseCount</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    @if (survey.IsActive)
+                                                    {
+                                                        <span class="badge bg-success">Aktif</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary">Pasif</span>
+                                                    }
+                                                </td>
+                                                <td class="text-center">
+                                                    <a asp-action="SurveyDetails" asp-route-id="@survey.Id" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1"></i>
+                                <p class="mt-2">Henüz anket yok</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Son Kullanıcılar -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 fw-bold">Son Kullanıcılar</h5>
+                            <a asp-action="Users" class="btn btn-sm btn-outline-primary">Tümünü Gör</a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (Model.RecentUsers.Any())
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var user in Model.RecentUsers)
+                                {
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="fw-bold">@user.Username</div>
+                                                <small class="text-muted">@user.Email</small>
+                                            </div>
+                                            <div>
+                                                @if (user.IsActive)
+                                                {
+                                                    <span class="badge bg-success">Aktif</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">Pasif</span>
+                                                }
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar me-1"></i>@user.CreatedAt.ToString("dd MMM yyyy")
+                                        </small>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-person-x fs-1"></i>
+                                <p class="mt-2">Henüz kullanıcı yok</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+        }
+
+    .table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+        .table tbody tr:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+</style>

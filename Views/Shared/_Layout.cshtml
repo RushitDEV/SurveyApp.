@@ -86,8 +86,8 @@
                             <a class="nav-link" href="#pricing">Fiyatlandırma</a>
                         </li>
 
-                        @if (User?.Identity?.IsAuthenticated ?? false)
-                        {
+                            @if (User?.Identity?.IsAuthenticated ?? false)
+                            {
                             <li class="nav-item dropdown ms-3">
                                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                                     <i class="bi bi-person-circle me-1"></i> @User.Identity.Name
@@ -98,6 +98,18 @@
                                             <i class="bi bi-list-ul me-2"></i>Anketlerim
                                         </a>
                                     </li>
+
+                                    @* ✅ Admin menüsü *@
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li>
+                                            <a class="dropdown-item text-primary fw-bold" asp-controller="Admin" asp-action="Dashboard">
+                                                <i class="bi bi-speedometer2 me-2"></i>Admin Paneli
+                                            </a>
+                                        </li>
+                                    }
+
                                     <li><hr class="dropdown-divider" /></li>
                                     <li>
                                         <form asp-controller="Auth" asp-action="Logout" method="post" class="dropdown-item p-0">

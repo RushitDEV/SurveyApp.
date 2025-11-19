@@ -14,6 +14,9 @@ namespace SurveyApp.ViewModels
         public bool IsActive { get; set; }
         public int QuestionCount { get; set; }
         public int ResponseCount { get; set; }
+
+        public string CreatedBy { get; set; } = string.Empty; // 🔹 EKLENDİ
+
         public bool IsExpired => EndDate.HasValue && EndDate.Value < DateTime.Now;
     }
 

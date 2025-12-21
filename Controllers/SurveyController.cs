@@ -172,7 +172,7 @@ namespace SurveyApp.Controllers
 
             foreach (var response in responses)
             {
-                Console.WriteLine($"   - Yanıt ID: {response.Id}, Kullanıcı: {response.User?.Username ?? "Anonim"}, Tarih: {response.CreatedAt}");
+                Console.WriteLine($"   - Yanıt ID: {response.Id}, Kullanıcı: {response.User?.UserName ?? "Anonim"}, Tarih: {response.CreatedAt}");
                 Console.WriteLine($"   - Bu yanıttaki cevap sayısı: {response.Answers?.Count ?? 0}");
 
                 foreach (var answer in response.Answers)

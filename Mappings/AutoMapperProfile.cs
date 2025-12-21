@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using SurveyApp.Models;
 using SurveyApp.ViewModels;
-using System;
 
 namespace SurveyApp.Mappings
 {
@@ -13,9 +12,7 @@ namespace SurveyApp.Mappings
             CreateMap<Survey, SurveyListViewModel>()
                 .ForMember(dest => dest.QuestionCount, opt => opt.MapFrom(src => src.Questions.Count))
                 .ForMember(dest => dest.ResponseCount, opt => opt.MapFrom(src => src.Responses.Count))
-                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy != null ? src.CreatedBy.Username : ""));
-
-
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy != null ? src.CreatedBy.UserName : "")); // ✅ UserName
 
             CreateMap<Survey, SurveyDetailViewModel>()
                 .ForMember(dest => dest.ResponseCount, opt => opt.MapFrom(src => src.Responses.Count));
@@ -30,7 +27,7 @@ namespace SurveyApp.Mappings
                 .ForMember(dest => dest.Questions, opt => opt.Ignore())
                 .ForMember(dest => dest.Responses, opt => opt.Ignore());
 
-            // Question Mappings - ✅ Enum'u string'e çevir
+            // Question Mappings
             CreateMap<Question, QuestionDetailViewModel>()
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()));
 
@@ -46,7 +43,6 @@ namespace SurveyApp.Mappings
                 .ForMember(dest => dest.SurveyId, opt => opt.Ignore())
                 .ForMember(dest => dest.Options, opt => opt.Ignore())
                 .ForMember(dest => dest.Answers, opt => opt.Ignore())
-                // 🔧 Enum dönüştürme (string → enum)
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => ConvertQuestionType(src.Type)));
 
             // Option Mappings
@@ -82,17 +78,9 @@ namespace SurveyApp.Mappings
                 .ForMember(dest => dest.Option, opt => opt.Ignore())
                 .ForMember(dest => dest.ResponseId, opt => opt.Ignore())
                 .ForMember(dest => dest.AnswerDate, opt => opt.Ignore());
-            // Answer -> AnswerSubmitViewModel mapping'i (ResponseController'da kullanılıyor olabilir)
+
             CreateMap<Answer, AnswerSubmitViewModel>()
                 .ForMember(dest => dest.OptionIds, opt => opt.Ignore());
-
-            CreateMap<AnswerSubmitViewModel, Answer>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Response, opt => opt.Ignore())
-                .ForMember(dest => dest.Question, opt => opt.Ignore())
-                .ForMember(dest => dest.Option, opt => opt.Ignore())
-                .ForMember(dest => dest.ResponseId, opt => opt.Ignore())
-                .ForMember(dest => dest.AnswerDate, opt => opt.Ignore());
         }
 
         private static QuestionType ConvertQuestionType(string? type)

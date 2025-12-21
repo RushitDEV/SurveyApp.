@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using SurveyApp.Models;
 using SurveyApp.Repositories.Interfaces;
 using SurveyApp.ViewModels;
-using AutoMapper;
 
 namespace SurveyApp.Controllers
 {
@@ -11,16 +13,22 @@ namespace SurveyApp.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserRepository _userRepository;
+        private readonly UserManager<User> _userManager;
         private readonly IMapper _mapper;
 
-        public AdminController(IUnitOfWork unitOfWork, IUserRepository userRepository, IMapper mapper)
+        public AdminController(
+            IUnitOfWork unitOfWork,
+            IUserRepository userRepository,
+            UserManager<User> userManager,
+            IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
+            _userManager = userManager;
             _mapper = mapper;
         }
 
-        // GET: Admin/Dashboard - Ana admin paneli
+        // GET: Admin/Dashboard
         public async Task<IActionResult> Dashboard()
         {
             var allSurveys = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
@@ -48,14 +56,14 @@ namespace SurveyApp.Controllers
             return View(viewModel);
         }
 
-        // GET: Admin/Users - Tüm kullanıcıları listele
+        // GET: Admin/Users
         public async Task<IActionResult> Users()
         {
             var users = await _userRepository.GetAllUsersAsync();
             return View(users);
         }
 
-        // GET: Admin/Surveys - Tüm anketleri listele
+        // GET: Admin/Surveys
         public async Task<IActionResult> Surveys()
         {
             var surveys = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
@@ -69,7 +77,7 @@ namespace SurveyApp.Controllers
             return View(viewModel);
         }
 
-        // GET: Admin/SurveyDetails/5 - Anket detayları
+        // GET: Admin/SurveyDetails/5
         public async Task<IActionResult> SurveyDetails(int id)
         {
             var survey = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
@@ -83,14 +91,12 @@ namespace SurveyApp.Controllers
             if (surveyEntity == null)
                 return NotFound();
 
-            // Options'ları yükle
             foreach (var question in surveyEntity.Questions)
             {
                 var options = await _unitOfWork.Options.GetWhereAsync(o => o.QuestionId == question.Id);
                 question.Options = options.ToList();
             }
 
-            // Responses'ları detaylı yükle
             var responses = await _unitOfWork.Responses.GetWhereWithIncludesAsync(
                 r => r.SurveyId == id,
                 r => r.Answers,
@@ -136,7 +142,6 @@ namespace SurveyApp.Controllers
                 if (surveyEntity == null)
                     return Json(new { success = false, message = "Anket bulunamadı" });
 
-                // Tüm ilişkili verileri yükle
                 foreach (var question in surveyEntity.Questions)
                 {
                     var options = await _unitOfWork.Options.GetWhereAsync(o => o.QuestionId == question.Id);
@@ -149,7 +154,6 @@ namespace SurveyApp.Controllers
                     response.Answers = answers.ToList();
                 }
 
-                // Cascade delete
                 _unitOfWork.Answers.DeleteRange(surveyEntity.Responses.SelectMany(r => r.Answers));
                 _unitOfWork.Options.DeleteRange(surveyEntity.Questions.SelectMany(q => q.Options));
                 _unitOfWork.Questions.DeleteRange(surveyEntity.Questions);
@@ -177,7 +181,14 @@ namespace SurveyApp.Controllers
                     return Json(new { success = false, message = "Kullanıcı bulunamadı" });
 
                 user.IsActive = !user.IsActive;
-                await _userRepository.UpdateAsync(user);
+
+                // ✅ UserManager kullanarak güncelle
+                var result = await _userManager.UpdateAsync(user);
+
+                if (!result.Succeeded)
+                {
+                    return Json(new { success = false, message = "Güncelleme başarısız" });
+                }
 
                 return Json(new { success = true, isActive = user.IsActive });
             }
@@ -187,7 +198,7 @@ namespace SurveyApp.Controllers
             }
         }
 
-        // GET: Admin/Statistics - Genel istatistikler
+        // GET: Admin/Statistics
         public async Task<IActionResult> Statistics()
         {
             var surveys = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(

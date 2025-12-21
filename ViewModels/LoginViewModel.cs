@@ -6,7 +6,7 @@ namespace SurveyApp.ViewModels
     {
         [Required(ErrorMessage = "Kullanıcı adı gereklidir")]
         [Display(Name = "Kullanıcı Adı")]
-        public string Username { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Şifre gereklidir")]
         [DataType(DataType.Password)]

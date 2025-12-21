@@ -1,12 +1,20 @@
-﻿namespace SurveyApp.Models  // ✅ Bu satır eksikti!
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace SurveyApp.Models
 {
-    public class User
+    // ✅ IdentityUser'dan türetiyoruz
+    public class User : IdentityUser<int>  // int = UserId tipi
     {
-        public int Id { get; set; }
-        public string Username { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string PasswordHash { get; set; } = string.Empty;
-        public string Role { get; set; } = "User"; // "Admin" veya "User"
+        // IdentityUser zaten şunları içeriyor:
+        // - Id (int)
+        // - UserName
+        // - Email
+        // - PasswordHash
+        // - PhoneNumber
+        // - EmailConfirmed
+        // - TwoFactorEnabled vb.
+
+        // Ek alanlar:
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
 

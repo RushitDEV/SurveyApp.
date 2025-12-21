@@ -1,9 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SurveyApp.Models;
 
 namespace SurveyApp.Data
 {
-    public class ApplicationDbContext : DbContext
+    // ✅ IdentityDbContext'e geçiyoruz
+    public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -15,11 +18,20 @@ namespace SurveyApp.Data
         public DbSet<Option> Options { get; set; }
         public DbSet<Response> Responses { get; set; }
         public DbSet<Answer> Answers { get; set; }
-        public DbSet<User> Users { get; set; } // ✅ EKLENDI
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // ✅ Identity tabloları için gerekli
             base.OnModelCreating(modelBuilder);
+
+            // Identity tablo isimlerini özelleştir (opsiyonel)
+            modelBuilder.Entity<User>().ToTable("Users");
+            modelBuilder.Entity<IdentityRole<int>>().ToTable("Roles");
+            modelBuilder.Entity<IdentityUserRole<int>>().ToTable("UserRoles");
+            modelBuilder.Entity<IdentityUserClaim<int>>().ToTable("UserClaims");
+            modelBuilder.Entity<IdentityUserLogin<int>>().ToTable("UserLogins");
+            modelBuilder.Entity<IdentityRoleClaim<int>>().ToTable("RoleClaims");
+            modelBuilder.Entity<IdentityUserToken<int>>().ToTable("UserTokens");
 
             // ✅ User - Surveys (SetNull - Kullanıcı silinince anketler kalır)
             modelBuilder.Entity<User>()
@@ -28,21 +40,12 @@ namespace SurveyApp.Data
                 .HasForeignKey(s => s.CreatedByUserId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // ✅ User - Responses (SetNull - Kullanıcı silinince cevaplar kalır)
+            // ✅ User - Responses (SetNull)
             modelBuilder.Entity<User>()
                 .HasMany(u => u.Responses)
                 .WithOne(r => r.User)
                 .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.SetNull);
-
-            // ✅ Username ve Email unique olmalı
-            modelBuilder.Entity<User>()
-                .HasIndex(u => u.Username)
-                .IsUnique();
-
-            modelBuilder.Entity<User>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
 
             // ✅ Survey - Questions (Cascade)
             modelBuilder.Entity<Survey>()
@@ -65,7 +68,7 @@ namespace SurveyApp.Data
                 .HasForeignKey(o => o.QuestionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ⚠️ Response - Answers (Restrict) — HATANIN NEDENİ BURASIYDI
+            // ⚠️ Response - Answers (Restrict)
             modelBuilder.Entity<Response>()
                 .HasMany(r => r.Answers)
                 .WithOne(a => a.Response)
@@ -85,6 +88,12 @@ namespace SurveyApp.Data
                 .WithMany()
                 .HasForeignKey(a => a.OptionId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // Seed Admin Role
+            modelBuilder.Entity<IdentityRole<int>>().HasData(
+                new IdentityRole<int> { Id = 1, Name = "Admin", NormalizedName = "ADMIN" },
+                new IdentityRole<int> { Id = 2, Name = "User", NormalizedName = "USER" }
+            );
         }
     }
 }

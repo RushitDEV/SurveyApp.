@@ -1,8 +1,10 @@
-﻿using SurveyApp.ViewModels;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using SurveyApp.Hubs;
 using SurveyApp.Models;
 using SurveyApp.Repositories.Interfaces;
+using SurveyApp.ViewModels;
 
 namespace SurveyApp.Controllers
 {
@@ -11,12 +13,18 @@ namespace SurveyApp.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _environment;
+        private readonly IHubContext<SurveyHub> _hubContext; // ✅ SignalR Hub
 
-        public ResponseController(IUnitOfWork unitOfWork, IMapper mapper, IWebHostEnvironment environment)
+        public ResponseController(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            IWebHostEnvironment environment,
+            IHubContext<SurveyHub> hubContext)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _environment = environment;
+            _hubContext = hubContext;
         }
 
         // GET: Response/TakeSurvey/5 - Anketi göster
@@ -31,7 +39,7 @@ namespace SurveyApp.Controllers
             if (surveyEntity == null)
                 return NotFound();
 
-            // ✅ Options'ları her soru için yükle
+            // Options'ları her soru için yükle
             foreach (var question in surveyEntity.Questions)
             {
                 var options = await _unitOfWork.Options.GetWhereAsync(o => o.QuestionId == question.Id);
@@ -44,7 +52,6 @@ namespace SurveyApp.Controllers
                 ViewBag.Expired = true;
             }
 
-            // ✅ Manuel mapping yap (AutoMapper bazen nested ilişkileri düzgün map edemeyebilir)
             var viewModel = new SurveyTakeViewModel
             {
                 Id = surveyEntity.Id,
@@ -56,7 +63,7 @@ namespace SurveyApp.Controllers
                 {
                     Id = q.Id,
                     QuestionText = q.QuestionText,
-                    Type = q.Type.ToString(), // Enum'u string'e çevir
+                    Type = q.Type.ToString(),
                     Order = q.Order,
                     IsRequired = q.IsRequired,
                     Options = q.Options.Select(o => new OptionViewModel
@@ -107,7 +114,7 @@ namespace SurveyApp.Controllers
                 };
 
                 await _unitOfWork.Responses.AddAsync(response);
-                await _unitOfWork.SaveChangesAsync(); // Response'u kaydet ki ID alabilelim
+                await _unitOfWork.SaveChangesAsync();
 
                 // Answers'ı ekle
                 foreach (var answerModel in model.Answers)
@@ -119,6 +126,18 @@ namespace SurveyApp.Controllers
                 }
 
                 await _unitOfWork.CommitTransactionAsync();
+
+                // ✅ SignalR ile Admin'e bildirim gönder
+                var responseCount = await _unitOfWork.Responses.CountAsync(r => r.SurveyId == model.SurveyId);
+                await _hubContext.Clients.Group("Admins").SendAsync("ReceiveNewResponse", new
+                {
+                    surveyId = surveyEntity.Id,
+                    surveyTitle = surveyEntity.Title,
+                    responseCount = responseCount,
+                    timestamp = DateTime.Now
+                });
+
+                Console.WriteLine($"📩 SignalR bildirimi gönderildi: {surveyEntity.Title} - {responseCount} yanıt");
 
                 return Json(new { success = true, message = "Cevaplarınız kaydedildi. Teşekkürler!" });
             }
@@ -242,7 +261,7 @@ namespace SurveyApp.Controllers
             await _unitOfWork.SaveChangesAsync();
         }
 
-        // POST: Response/UploadFile - Dosya yükleme
+        // POST: Response/UploadFile
         [HttpPost]
         public async Task<IActionResult> UploadFile(IFormFile file, int questionId)
         {
@@ -251,15 +270,12 @@ namespace SurveyApp.Controllers
                 if (file == null || file.Length == 0)
                     return Json(new { success = false, message = "Dosya seçilmedi" });
 
-                // Dosya boyutu kontrolü (5MB)
                 if (file.Length > 5 * 1024 * 1024)
                     return Json(new { success = false, message = "Dosya boyutu 5MB'dan küçük olmalıdır" });
 
-                // Güvenli dosya adı oluştur
                 var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
                 var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "responses");
 
-                // Klasör yoksa oluştur
                 if (!Directory.Exists(uploadsFolder))
                     Directory.CreateDirectory(uploadsFolder);
 
@@ -278,7 +294,7 @@ namespace SurveyApp.Controllers
             }
         }
 
-        // GET: Response/ThankYou - Teşekkür sayfası
+        // GET: Response/ThankYou
         public IActionResult ThankYou()
         {
             return View();

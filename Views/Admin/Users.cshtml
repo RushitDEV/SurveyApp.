@@ -31,12 +31,10 @@
                                     <th>ID</th>
                                     <th>Kullanıcı Adı</th>
                                     <th>E-posta</th>
-                                    <th>Rol</th>
                                     <th>Kayıt Tarihi</th>
                                     <th class="text-center">Anketleri</th>
                                     <th class="text-center">Yanıtları</th>
                                     <th class="text-center">Durum</th>
-                                    <th class="text-center">İşlemler</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -48,27 +46,13 @@
                                             <div class="d-flex align-items-center">
                                                 <i class="bi bi-person-circle fs-4 text-primary me-2"></i>
                                                 <div>
-                                                    <div class="fw-bold">@user.Username</div>
-                                                    @if (user.Role == "Admin")
-                                                    {
-                                                        <span class="badge bg-danger badge-sm"></span>
-                                                    }
+                                                    <div class="fw-bold">@user.UserName</div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td>
                                             <i class="bi bi-envelope me-1"></i>
                                             @user.Email
-                                        </td>
-                                        <td>
-                                            @if (user.Role == "Admin")
-                                            {
-                                                <span class="badge bg-danger">Admin</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-info">Kullanıcı</span>
-                                            }
                                         </td>
                                         <td>
                                             <small class="text-muted">
@@ -92,20 +76,6 @@
                                                 <span class="badge bg-danger" id="status_@user.Id">Pasif</span>
                                             }
                                         </td>
-                                        <td class="text-center">
-                                            @if (user.Role != "Admin")
-                                            {
-                                                <button class="btn btn-sm btn-outline-warning"
-                                                        onclick="toggleUserStatus(@user.Id)"
-                                                        title="Durumu Değiştir">
-                                                    <i class="bi bi-power"></i>
-                                                </button>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-muted small">Admin</span>
-                                            }
-                                        </td>
                                     </tr>
                                 }
                             </tbody>
@@ -116,7 +86,7 @@
 
             <!-- İstatistikler -->
             <div class="row g-4 mt-4">
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="card border-0 shadow-sm">
                         <div class="card-body text-center">
                             <i class="bi bi-people-fill fs-1 text-primary mb-2"></i>
@@ -125,21 +95,12 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="card border-0 shadow-sm">
                         <div class="card-body text-center">
                             <i class="bi bi-check-circle-fill fs-1 text-success mb-2"></i>
                             <h3 class="fw-bold mb-0">@Model.Count(u => u.IsActive)</h3>
                             <small class="text-muted">Aktif Kullanıcı</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body text-center">
-                            <i class="bi bi-shield-fill fs-1 text-danger mb-2"></i>
-                            <h3 class="fw-bold mb-0">@Model.Count(u => u.Role == "Admin")</h3>
-                            <small class="text-muted">Admin</small>
                         </div>
                     </div>
                 </div>
@@ -156,34 +117,6 @@
         }
     </div>
 </div>
-
-<script>
-    function toggleUserStatus(userId) {
-        if (confirm('Bu kullanıcının durumunu değiştirmek istediğinizden emin misiniz?')) {
-            fetch('/Admin/ToggleUserStatus/' + userId, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    const badge = document.getElementById('status_' + userId);
-                    if (data.isActive) {
-                        badge.className = 'badge bg-success';
-                        badge.textContent = 'Aktif';
-                    } else {
-                        badge.className = 'badge bg-danger';
-                        badge.textContent = 'Pasif';
-                    }
-                    alert('✅ Kullanıcı durumu güncellendi!');
-                } else {
-                    alert('❌ ' + data.message);
-                }
-            })
-            .catch(e => alert('❌ Bir hata oluştu: ' + e));
-        }
-    }
-</script>
 
 <style>
     .table tbody tr {

@@ -5,6 +5,11 @@ using SurveyApp.Repositories.Interfaces;
 
 namespace SurveyApp.Repositories
 {
+    /// <summary>
+    /// Identity ile birlikte kullanılan basitleştirilmiş User Repository
+    /// UserManager, SignInManager zaten çoğu işi yapıyor
+    /// Bu repository sadece özel sorgular için kullanılıyor
+    /// </summary>
     public class UserRepository : IUserRepository
     {
         private readonly ApplicationDbContext _context;
@@ -14,41 +19,9 @@ namespace SurveyApp.Repositories
             _context = context;
         }
 
-        public async Task<User?> GetByUsernameAsync(string username)
-        {
-            return await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == username && u.IsActive);
-        }
-
-        public async Task<User?> GetByEmailAsync(string email)
-        {
-            return await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
-        }
-
-        public async Task<User?> GetByIdAsync(int id)
-        {
-            return await _context.Users
-                .FirstOrDefaultAsync(u => u.Id == id);
-        }
-
-        public async Task<User> CreateAsync(User user)
-        {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-            return user;
-        }
-
-        public async Task<bool> UsernameExistsAsync(string username)
-        {
-            return await _context.Users.AnyAsync(u => u.Username == username);
-        }
-
-        public async Task<bool> EmailExistsAsync(string email)
-        {
-            return await _context.Users.AnyAsync(u => u.Email == email);
-        }
-
+        /// <summary>
+        /// Tüm kullanıcıları anketleri ve yanıtlarıyla birlikte getirir
+        /// </summary>
         public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
             return await _context.Users
@@ -58,20 +31,24 @@ namespace SurveyApp.Repositories
                 .ToListAsync();
         }
 
-        public async Task UpdateAsync(User user)
+        /// <summary>
+        /// ID'ye göre kullanıcı getirir
+        /// </summary>
+        public async Task<User?> GetByIdAsync(int id)
         {
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            return await _context.Users
+                .Include(u => u.Surveys)
+                .Include(u => u.Responses)
+                .FirstOrDefaultAsync(u => u.Id == id);
         }
 
-        public async Task DeleteAsync(int id)
-        {
-            var user = await GetByIdAsync(id);
-            if (user != null)
-            {
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
-            }
-        }
+        // ✅ Artık bu metodlara gerek yok, UserManager kullanıyoruz:
+        // - CreateAsync → UserManager.CreateAsync()
+        // - UpdateAsync → UserManager.UpdateAsync()
+        // - DeleteAsync → UserManager.DeleteAsync()
+        // - GetByUserNameAsync → UserManager.FindByNameAsync()
+        // - GetByEmailAsync → UserManager.FindByEmailAsync()
+        // - UserNameExistsAsync → UserManager.FindByNameAsync() != null
+        // - EmailExistsAsync → UserManager.FindByEmailAsync() != null
     }
 }

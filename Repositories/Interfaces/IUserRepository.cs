@@ -2,16 +2,14 @@
 
 namespace SurveyApp.Repositories.Interfaces
 {
+    /// <summary>
+    /// Identity ile birlikte kullanılacak basitleştirilmiş User Repository
+    /// UserManager artık çoğu işlemi yapıyor (Create, Update, Delete, UserName/Email kontrolü)
+    /// Bu interface sadece özel sorgular için kullanılacak
+    /// </summary>
     public interface IUserRepository
     {
-        Task<User?> GetByUsernameAsync(string username);
-        Task<User?> GetByEmailAsync(string email);
-        Task<User?> GetByIdAsync(int id);
-        Task<User> CreateAsync(User user);
-        Task<bool> UsernameExistsAsync(string username);
-        Task<bool> EmailExistsAsync(string email);
         Task<IEnumerable<User>> GetAllUsersAsync();
-        Task UpdateAsync(User user);
-        Task DeleteAsync(int id);
+        Task<User?> GetByIdAsync(int id);
     }
 }

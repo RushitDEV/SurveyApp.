@@ -1,20 +1,25 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using SurveyApp.Repositories.Interfaces;
+using SurveyApp.Models;
 using SurveyApp.ViewModels;
-using System.Security.Claims;
 
 namespace SurveyApp.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly IAuthService _authService;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IAuthService authService)
+        public AuthController(
+            UserManager<User> userManager,
+            SignInManager<User> signInManager,
+            ILogger<AuthController> logger)
         {
-            _authService = authService;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -40,7 +45,8 @@ namespace SurveyApp.Controllers
                 return View(model);
             }
 
-            var user = await _authService.AuthenticateAsync(model.Username, model.Password);
+            // Kullanıcıyı bul
+            var user = await _userManager.FindByNameAsync(model.UserName);
 
             if (user == null)
             {
@@ -48,32 +54,42 @@ namespace SurveyApp.Controllers
                 return View(model);
             }
 
-            var claims = new List<Claim>
+            // Aktif mi kontrol et
+            if (!user.IsActive)
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role)
-            };
-
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var authProperties = new AuthenticationProperties
-            {
-                IsPersistent = model.RememberMe,
-                ExpiresUtc = model.RememberMe ? DateTimeOffset.UtcNow.AddDays(30) : DateTimeOffset.UtcNow.AddHours(1)
-            };
-
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(claimsIdentity),
-                authProperties);
-
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-            {
-                return Redirect(returnUrl);
+                ModelState.AddModelError(string.Empty, "Hesabınız pasif durumda. Lütfen yönetici ile iletişime geçin.");
+                return View(model);
             }
 
-            return RedirectToAction("Index", "Home");
+            // Giriş yap
+            var result = await _signInManager.PasswordSignInAsync(
+                user.UserName!,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: true
+            );
+
+            if (result.Succeeded)
+            {
+                _logger.LogInformation($"Kullanıcı giriş yaptı: {user.UserName}");
+
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                {
+                    return Redirect(returnUrl);
+                }
+
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (result.IsLockedOut)
+            {
+                _logger.LogWarning($"Kullanıcı hesabı kilitlendi: {user.UserName}");
+                ModelState.AddModelError(string.Empty, "Hesabınız geçici olarak kilitlenmiştir. Lütfen daha sonra tekrar deneyin.");
+                return View(model);
+            }
+
+            ModelState.AddModelError(string.Empty, "Kullanıcı adı veya şifre hatalı");
+            return View(model);
         }
 
         [HttpGet]
@@ -96,17 +112,36 @@ namespace SurveyApp.Controllers
                 return View(model);
             }
 
-            try
+            var user = new User
             {
-                await _authService.RegisterAsync(model.Username, model.Email, model.Password);
-                TempData["SuccessMessage"] = "Kayıt başarılı! Giriş yapabilirsiniz.";
-                return RedirectToAction(nameof(Login));
-            }
-            catch (Exception ex)
+                UserName = model.UserName,
+                Email = model.Email,
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true
+            };
+
+            var result = await _userManager.CreateAsync(user, model.Password);
+
+            if (result.Succeeded)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
-                return View(model);
+                _logger.LogInformation($"Yeni kullanıcı oluşturuldu: {user.UserName}");
+
+                // Kullanıcıya "User" rolünü ver
+                await _userManager.AddToRoleAsync(user, "User");
+
+                // Otomatik giriş yap
+                await _signInManager.SignInAsync(user, isPersistent: false);
+
+                TempData["SuccessMessage"] = "Kayıt başarılı! Hoş geldiniz.";
+                return RedirectToAction("Index", "Home");
             }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View(model);
         }
 
         [HttpPost]
@@ -114,7 +149,8 @@ namespace SurveyApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await _signInManager.SignOutAsync();
+            _logger.LogInformation("Kullanıcı çıkış yaptı");
             return RedirectToAction("Index", "Home");
         }
 

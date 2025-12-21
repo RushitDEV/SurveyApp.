@@ -7,7 +7,7 @@ namespace SurveyApp.ViewModels
         [Required(ErrorMessage = "Kullanıcı adı gereklidir")]
         [StringLength(50, MinimumLength = 3, ErrorMessage = "Kullanıcı adı 3-50 karakter olmalıdır")]
         [Display(Name = "Kullanıcı Adı")]
-        public string Username { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "E-posta gereklidir")]
         [EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi giriniz")]

@@ -7,18 +7,28 @@
     <!-- Header -->
     <div class="bg-gradient text-white py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
         <div class="container">
-            <h2 class="mb-0 fw-bold">
-                <i class="bi bi-speedometer2 me-2 text-black">
-                    <p 
-                        Admin Paneli
-                    </p>
-                </i>            </h2>
-            <p class="mb-0 opacity-75 text-black">Sistem geneli yönetim ve istatistikler</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-0 fw-bold">
+                        <i class="bi bi-speedometer2 me-2"></i>Admin Paneli
+                    </h2>
+                    <p class="mb-0 opacity-75">Sistem geneli yönetim ve istatistikler</p>
+                </div>
+                <!-- SignalR durum -->
+                <div id="connectionStatus" class="badge bg-danger">
+                    <i class="bi bi-wifi-off me-1"></i>Bağlantı bekleniyor...
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Bildirim Alanı -->
+    <div class="container mt-3">
+        <div id="notificationArea"></div>
+    </div>
+
     <div class="container py-5">
-        <!-- İstatistik Kartları -->
+        <!-- İstatistik Kartları (mevcut kodunuz) -->
         <div class="row g-4 mb-5">
             <div class="col-md-3">
                 <div class="card border-0 shadow-sm h-100">
@@ -62,205 +72,157 @@
                         <div class="rounded-circle bg-warning bg-opacity-10 d-inline-flex p-3 mb-3">
                             <i class="bi bi-chat-left-text fs-1 text-warning"></i>
                         </div>
-                        <h3 class="fw-bold mb-1">@Model.TotalResponses</h3>
+                        <h3 class="fw-bold mb-1" id="totalResponses">@Model.TotalResponses</h3>
                         <p class="text-muted mb-0">Toplam Yanıt</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Hızlı Erişim -->
-        <div class="row g-4 mb-5">
-            <div class="col-md-4">
-                <a asp-action="Users" class="text-decoration-none">
-                    <div class="card border-0 shadow-sm hover-card h-100">
-                        <div class="card-body p-4">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-people-fill fs-1 text-primary me-3"></i>
-                                <div>
-                                    <h5 class="mb-1 fw-bold">Kullanıcılar</h5>
-                                    <p class="text-muted mb-0 small">Kullanıcı yönetimi</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-md-4">
-                <a asp-action="Surveys" class="text-decoration-none">
-                    <div class="card border-0 shadow-sm hover-card h-100">
-                        <div class="card-body p-4">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-list-check fs-1 text-success me-3"></i>
-                                <div>
-                                    <h5 class="mb-1 fw-bold">Anketler</h5>
-                                    <p class="text-muted mb-0 small">Tüm anketleri görüntüle</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-md-4">
-                <a asp-action="Statistics" class="text-decoration-none">
-                    <div class="card border-0 shadow-sm hover-card h-100">
-                        <div class="card-body p-4">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-graph-up fs-1 text-info me-3"></i>
-                                <div>
-                                    <h5 class="mb-1 fw-bold">İstatistikler</h5>
-                                    <p class="text-muted mb-0 small">Detaylı raporlar</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <!-- Son Anketler ve Kullanıcılar -->
-        <div class="row g-4">
-            <!-- Son Anketler -->
-            <div class="col-lg-8">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0 py-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0 fw-bold">Son Anketler</h5>
-                            <a asp-action="Surveys" class="btn btn-sm btn-outline-primary">Tümünü Gör</a>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        @if (Model.RecentSurveys.Any())
-                        {
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Başlık</th>
-                                            <th>Oluşturan</th>
-                                            <th class="text-center">Sorular</th>
-                                            <th class="text-center">Yanıtlar</th>
-                                            <th class="text-center">Durum</th>
-                                            <th class="text-center">İşlem</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var survey in Model.RecentSurveys)
-                                        {
-                                            <tr>
-                                                <td>
-                                                    <div class="fw-bold">@survey.Title</div>
-                                                    <small class="text-muted">@survey.CreatedDate.ToString("dd MMM yyyy")</small>
-                                                </td>
-                                                <td>@(string.IsNullOrEmpty(survey.CreatedBy) ? "Bilinmiyor" : survey.CreatedBy)</td>
-                                                <td class="text-center">
-                                                    <span class="badge bg-light text-dark">@survey.QuestionCount</span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <span class="badge bg-primary">@survey.ResponseCount</span>
-                                                </td>
-                                                <td class="text-center">
-                                                    @if (survey.IsActive)
-                                                    {
-                                                        <span class="badge bg-success">Aktif</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-secondary">Pasif</span>
-                                                    }
-                                                </td>
-                                                <td class="text-center">
-                                                    <a asp-action="SurveyDetails" asp-route-id="@survey.Id" class="btn btn-sm btn-outline-primary">
-                                                        <i class="bi bi-eye"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox fs-1"></i>
-                                <p class="mt-2">Henüz anket yok</p>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
-
-            <!-- Son Kullanıcılar -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0 py-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0 fw-bold">Son Kullanıcılar</h5>
-                            <a asp-action="Users" class="btn btn-sm btn-outline-primary">Tümünü Gör</a>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        @if (Model.RecentUsers.Any())
-                        {
-                            <div class="list-group list-group-flush">
-                                @foreach (var user in Model.RecentUsers)
-                                {
-                                    <div class="list-group-item">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <div class="fw-bold">@user.Username</div>
-                                                <small class="text-muted">@user.Email</small>
-                                            </div>
-                                            <div>
-                                                @if (user.IsActive)
-                                                {
-                                                    <span class="badge bg-success">Aktif</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-danger">Pasif</span>
-                                                }
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">
-                                            <i class="bi bi-calendar me-1"></i>@user.CreatedAt.ToString("dd MMM yyyy")
-                                        </small>
-                                    </div>
-                                }
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="text-center py-5 text-muted">
-                                <i class="bi bi-person-x fs-1"></i>
-                                <p class="mt-2">Henüz kullanıcı yok</p>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Diğer içerik (Son Anketler vb.) buraya gelecek -->
     </div>
 </div>
 
+<!-- ✅ SignalR Client Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+<script>
+    // SignalR bağlantısı
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/surveyHub")
+        .withAutomaticReconnect()
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+
+    // Bağlantı durumu göstergesi
+    const statusBadge = document.getElementById('connectionStatus');
+
+    function updateConnectionStatus(status, message) {
+        statusBadge.className = `badge bg-${status}`;
+        statusBadge.innerHTML = message;
+    }
+
+    // Bağlantı başarılı
+    connection.start()
+        .then(() => {
+            console.log('✅ SignalR bağlantısı başarılı!');
+            updateConnectionStatus('success', '<i class="bi bi-wifi me-1"></i>Canlı');
+        })
+        .catch(err => {
+            console.error('❌ SignalR bağlantı hatası:', err);
+            updateConnectionStatus('danger', '<i class="bi bi-wifi-off me-1"></i>Bağlantı hatası');
+        });
+
+    // Yeniden bağlanma olayları
+    connection.onreconnecting(() => {
+        updateConnectionStatus('warning', '<i class="bi bi-arrow-clockwise me-1"></i>Yeniden bağlanıyor...');
+    });
+
+    connection.onreconnected(() => {
+        updateConnectionStatus('success', '<i class="bi bi-wifi me-1"></i>Canlı');
+        showNotification('success', 'Bağlantı yeniden sağlandı');
+    });
+
+    connection.onclose(() => {
+        updateConnectionStatus('danger', '<i class="bi bi-wifi-off me-1"></i>Bağlantı kesildi');
+        showNotification('danger', 'SignalR bağlantısı kesildi');
+    });
+
+    // ✅ Yeni yanıt bildirimi al
+    connection.on("ReceiveNewResponse", function (data) {
+        console.log('📩 Yeni yanıt bildirimi:', data);
+
+        // İstatistiği güncelle
+        const totalResponsesEl = document.getElementById('totalResponses');
+        if (totalResponsesEl) {
+            totalResponsesEl.textContent = parseInt(totalResponsesEl.textContent) + 1;
+
+            // Animasyon
+            totalResponsesEl.classList.add('text-success');
+            setTimeout(() => totalResponsesEl.classList.remove('text-success'), 1000);
+        }
+
+        // Bildirim göster
+        showNotification('info', `
+            <strong>${data.surveyTitle}</strong> anketine yeni yanıt geldi!<br>
+            <small>Toplam ${data.responseCount} yanıt</small>
+        `);
+
+        // Toast bildirimi
+        showToast('Yeni Yanıt!', `${data.surveyTitle} - ${data.responseCount} yanıt`);
+    });
+
+    // Bildirim gösterme fonksiyonu
+    function showNotification(type, message) {
+        const notificationArea = document.getElementById('notificationArea');
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        notificationArea.appendChild(alert);
+
+        // 5 saniye sonra otomatik kaldır
+        setTimeout(() => {
+            alert.classList.remove('show');
+            setTimeout(() => alert.remove(), 150);
+        }, 5000);
+    }
+
+    // Toast bildirimi
+    function showToast(title, message) {
+        // Bootstrap Toast varsa kullan
+        const toastHtml = `
+            <div class="toast-container position-fixed bottom-0 end-0 p-3">
+                <div class="toast" role="alert">
+                    <div class="toast-header bg-primary text-white">
+                        <i class="bi bi-bell-fill me-2"></i>
+                        <strong class="me-auto">${title}</strong>
+                        <small>Az önce</small>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', toastHtml);
+        const toastEl = document.querySelector('.toast:last-child');
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+
+        // Toast kapandıktan sonra DOM'dan kaldır
+        toastEl.addEventListener('hidden.bs.toast', () => toastEl.parentElement.remove());
+    }
+</script>
+
 <style>
-    .hover-card {
-        transition: transform 0.2s, box-shadow 0.2s;
+    @@keyframes pulse {
+        0%, 100%
+
+    {
+        transform: scale(1);
     }
 
-        .hover-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
-        }
-
-    .table tbody tr {
-        transition: background-color 0.2s;
+    50% {
+        transform: scale(1.1);
     }
 
-        .table tbody tr:hover {
-            background-color: rgba(0,0,0,0.02);
-        }
+    }
+
+    .text-success {
+        animation: pulse 0.5s ease-in-out;
+    }
+
+    #connectionStatus {
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .toast {
+        min-width: 300px;
+    }
 </style>

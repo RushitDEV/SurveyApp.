@@ -1,129 +1,445 @@
 ﻿@model IEnumerable<SurveyApp.Models.User>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<SurveyApp.Models.User> UserManager
+
 @{
-    ViewData["Title"] = "Kullanıcılar - Admin";
+    ViewData["Title"] = "Kullanıcılar";
 }
 
-<div class="container-fluid p-0 bg-light min-vh-100">
-    <!-- Header -->
-    <div class="bg-white border-bottom">
-        <div class="container py-4">
+<div class="container-fluid p-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <a asp-action="Dashboard" class="btn btn-light me-2">
-                        <i class="bi bi-arrow-left"></i>
-                    </a>
-                    <span class="fw-bold fs-4">Kullanıcılar</span>
+                    <h2 class="text-white fw-bold mb-1">
+                        <i class="bi bi-people-fill me-2"></i>Kullanıcı Yönetimi
+                    </h2>
+                    <p class="text-white-50 mb-0">Tüm kullanıcıları görüntüleyin ve yönetin</p>
                 </div>
-                <span class="badge bg-primary fs-6">@Model.Count() Kullanıcı</span>
+                <div class="d-flex gap-2">
+                    <div class="bg-white bg-opacity-25 backdrop-blur rounded-3 px-4 py-2">
+                        <span class="text-white fw-semibold fs-5">@Model.Count()</span>
+                        <small class="text-white-50 ms-1">Toplam Kullanıcı</small>
+                    </div>
+                    <div class="bg-white bg-opacity-25 backdrop-blur rounded-3 px-4 py-2">
+                        <span class="text-white fw-semibold fs-5">@Model.Count(u => u.IsActive)</span>
+                        <small class="text-white-50 ms-1">Aktif</small>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="container py-4">
-        @if (Model.Any())
-        {
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Kullanıcı Adı</th>
-                                    <th>E-posta</th>
-                                    <th>Kayıt Tarihi</th>
-                                    <th class="text-center">Anketleri</th>
-                                    <th class="text-center">Yanıtları</th>
-                                    <th class="text-center">Durum</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var user in Model)
-                                {
-                                    <tr>
-                                        <td class="fw-bold">#@user.Id</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <i class="bi bi-person-circle fs-4 text-primary me-2"></i>
-                                                <div>
-                                                    <div class="fw-bold">@user.UserName</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <i class="bi bi-envelope me-1"></i>
-                                            @user.Email
-                                        </td>
-                                        <td>
-                                            <small class="text-muted">
-                                                <i class="bi bi-calendar me-1"></i>
-                                                @user.CreatedAt.ToString("dd MMM yyyy HH:mm")
-                                            </small>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="badge bg-light text-dark">@user.Surveys.Count</span>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="badge bg-primary">@user.Responses.Count</span>
-                                        </td>
-                                        <td class="text-center">
-                                            @if (user.IsActive)
-                                            {
-                                                <span class="badge bg-success" id="status_@user.Id">Aktif</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-danger" id="status_@user.Id">Pasif</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    <!-- Table Card -->
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 modern-table">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-hash text-muted"></i>
+                                    <span>ID</span>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-person text-muted"></i>
+                                    <span>Kullanıcı Bilgileri</span>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-calendar-event text-muted"></i>
+                                    <span>Kayıt Tarihi</span>
+                                </div>
+                            </th>
+                            <th class="text-center">
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <i class="bi bi-shield-check text-muted"></i>
+                                    <span>Rol</span>
+                                </div>
+                            </th>
+                            <th class="text-center">
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <i class="bi bi-power text-muted"></i>
+                                    <span>Durum</span>
+                                </div>
+                            </th>
+                            <th class="text-center pe-4">
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <i class="bi bi-gear text-muted"></i>
+                                    <span>İşlemler</span>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            var isAdmin = await UserManager.IsInRoleAsync(user, "Admin");
 
-            <!-- İstatistikler -->
-            <div class="row g-4 mt-4">
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body text-center">
-                            <i class="bi bi-people-fill fs-1 text-primary mb-2"></i>
-                            <h3 class="fw-bold mb-0">@Model.Count()</h3>
-                            <small class="text-muted">Toplam Kullanıcı</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body text-center">
-                            <i class="bi bi-check-circle-fill fs-1 text-success mb-2"></i>
-                            <h3 class="fw-bold mb-0">@Model.Count(u => u.IsActive)</h3>
-                            <small class="text-muted">Aktif Kullanıcı</small>
-                        </div>
-                    </div>
-                </div>
+                            <tr class="user-row">
+                                <td class="ps-4">
+                                    <span class="user-id">#@user.Id</span>
+                                </td>
+
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="user-avatar">
+                                            <i class="bi bi-person-circle"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold text-dark">@user.UserName</div>
+                                            <div class="text-muted small">
+                                                <i class="bi bi-envelope me-1"></i>@user.Email
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-dark small">@user.CreatedAt.ToString("dd MMMM yyyy")</span>
+                                        <span class="text-muted" style="font-size: 0.75rem;">@user.CreatedAt.ToString("HH:mm")</span>
+                                    </div>
+                                </td>
+
+                                <td class="text-center">
+                                    @if (isAdmin)
+                                    {
+                                        <span class="badge-custom badge-admin">
+                                            <i class="bi bi-shield-fill-check me-1"></i>Admin
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-custom badge-user">
+                                            <i class="bi bi-person-fill me-1"></i>User
+                                        </span>
+                                    }
+                                </td>
+
+                                <td class="text-center">
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="status-badge status-active">
+                                            <span class="status-dot"></span>
+                                            Aktif
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge status-inactive">
+                                            <span class="status-dot"></span>
+                                            Pasif
+                                        </span>
+                                    }
+                                </td>
+
+                                <td class="text-center pe-4">
+                                    @if (user.UserName != "admin")
+                                    {
+                                        <div class="btn-group btn-group-sm action-buttons" role="group">
+                                            <button class="btn btn-action btn-role"
+                                                    onclick="toggleRole(@user.Id)"
+                                                    title="Rol Değiştir">
+                                                <i class="bi bi-shield-lock"></i>
+                                                <span>Rol</span>
+                                            </button>
+
+                                            <button class="btn btn-action @(user.IsActive ? "btn-deactivate" : "btn-activate")"
+                                                    onclick="toggleStatus(@user.Id)"
+                                                    title="@(user.IsActive ? "Pasifleştir" : "Aktifleştir")">
+                                                <i class="bi bi-@(user.IsActive ? "x-circle" : "check-circle")"></i>
+                                                <span>@(user.IsActive ? "Pasifleştir" : "Aktifleştir")</span>
+                                            </button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="protected-badge">
+                                            <i class="bi bi-lock-fill me-1"></i>Korumalı
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
-        }
-        else
-        {
-            <div class="card shadow-sm">
-                <div class="card-body text-center py-5">
-                    <i class="bi bi-person-x text-muted" style="font-size: 4rem;"></i>
-                    <h4 class="mt-4 text-muted">Henüz kullanıcı yok</h4>
-                </div>
-            </div>
-        }
+        </div>
     </div>
 </div>
 
-<style>
-    .table tbody tr {
-        transition: background-color 0.2s;
+<script>
+    function toggleRole(userId) {
+        if (!confirm("🔄 Kullanıcının rolünü değiştirmek istediğinize emin misiniz?")) return;
+
+        fetch('/Admin/ToggleUserRole', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast('✅ Rol başarıyla değiştirildi!', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('❌ ' + data.message, 'error');
+            }
+        })
+        .catch(err => {
+            showToast('❌ Bir hata oluştu!', 'error');
+        });
     }
 
-        .table tbody tr:hover {
-            background-color: rgba(0,0,0,0.02);
+    function toggleStatus(userId) {
+        if (!confirm("⚠️ Kullanıcının durumunu değiştirmek istediğinize emin misiniz?")) return;
+
+        fetch('/Admin/ToggleUserStatus/' + userId, {
+            method: 'POST'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast('✅ Durum başarıyla güncellendi!', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('❌ ' + data.message, 'error');
+            }
+        })
+        .catch(err => {
+            showToast('❌ Bir hata oluştu!', 'error');
+        });
+    }
+
+    function showToast(message, type) {
+        // Basit bir toast notification (isteğe bağlı)
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed top-0 start-50 translate-middle-x mt-3`;
+        toast.style.zIndex = '9999';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+</script>
+
+<style>
+    /* Modern Table Styling */
+    .modern-table {
+        font-size: 0.95rem;
+    }
+
+        .modern-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
+
+            .modern-table thead th {
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 0.75rem;
+                letter-spacing: 0.5px;
+                padding: 1rem;
+                border: none;
+            }
+
+        .modern-table tbody td {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+        }
+
+    .user-row {
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+        .user-row:hover {
+            background: #f8f9ff;
+            transform: scale(1.01);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+
+    /* User Avatar */
+    .user-avatar {
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .user-id {
+        font-weight: 600;
+        color: #667eea;
+        font-family: 'Courier New', monospace;
+    }
+
+    /* Custom Badges */
+    .badge-custom {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .badge-admin {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+    }
+
+    .badge-user {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+    }
+
+    /* Status Badge */
+    .status-badge {
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-active {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-inactive {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    .status-active .status-dot {
+        background: #28a745;
+    }
+
+    .status-inactive .status-dot {
+        background: #dc3545;
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        gap: 0.5rem;
+    }
+
+    .btn-action {
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-role {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        color: #d35400;
+    }
+
+        .btn-role:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(252, 182, 159, 0.4);
+            color: #d35400;
+        }
+
+    .btn-deactivate {
+        background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+        color: #d63031;
+    }
+
+        .btn-deactivate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(253, 203, 110, 0.4);
+            color: #d63031;
+        }
+
+    .btn-activate {
+        background: linear-gradient(135deg, #a8e6cf 0%, #56ab91 100%);
+        color: #00b894;
+    }
+
+        .btn-activate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(168, 230, 207, 0.4);
+            color: #00b894;
+        }
+
+    .protected-badge {
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        background: #e9ecef;
+        color: #6c757d;
+        font-weight: 600;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* Backdrop blur effect */
+    .backdrop-blur {
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .modern-table {
+            font-size: 0.85rem;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            font-size: 1.2rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-action span {
+            display: none;
+        }
+    }
 </style>

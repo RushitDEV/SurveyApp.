@@ -28,7 +28,7 @@ namespace SurveyApp.Controllers
             _mapper = mapper;
         }
 
-        // GET: Admin/Dashboard
+        // ---------------- DASHBOARD ----------------
         public async Task<IActionResult> Dashboard()
         {
             var allSurveys = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
@@ -56,14 +56,46 @@ namespace SurveyApp.Controllers
             return View(viewModel);
         }
 
-        // GET: Admin/Users
+        // ---------------- USERS ----------------
         public async Task<IActionResult> Users()
         {
             var users = await _userRepository.GetAllUsersAsync();
             return View(users);
         }
 
-        // GET: Admin/Surveys
+        // 🔁 ROL DEĞİŞTİRME (JSON UYUMLU)
+        [HttpPost]
+        public async Task<IActionResult> ToggleUserRole([FromBody] ToggleUserRoleRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(request.UserId.ToString());
+            if (user == null)
+                return Json(new { success = false, message = "Kullanıcı bulunamadı" });
+
+            // ❗ Ana admin korunur
+            if (user.UserName == "admin")
+                return Json(new { success = false, message = "Ana adminin rolü değiştirilemez" });
+
+            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
+            if (isAdmin)
+            {
+                await _userManager.RemoveFromRoleAsync(user, "Admin");
+                await _userManager.AddToRoleAsync(user, "User");
+            }
+            else
+            {
+                await _userManager.RemoveFromRoleAsync(user, "User");
+                await _userManager.AddToRoleAsync(user, "Admin");
+            }
+
+            return Json(new
+            {
+                success = true,
+                newRole = isAdmin ? "User" : "Admin"
+            });
+        }
+
+        // ---------------- SURVEYS ----------------
         public async Task<IActionResult> Surveys()
         {
             var surveys = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
@@ -73,132 +105,14 @@ namespace SurveyApp.Controllers
                 s => s.CreatedBy
             );
 
-            var viewModel = _mapper.Map<List<SurveyListViewModel>>(surveys.OrderByDescending(s => s.CreatedDate));
-            return View(viewModel);
-        }
-
-        // GET: Admin/SurveyDetails/5
-        public async Task<IActionResult> SurveyDetails(int id)
-        {
-            var survey = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
-                s => s.Id == id,
-                s => s.Questions,
-                s => s.Responses,
-                s => s.CreatedBy
+            var viewModel = _mapper.Map<List<SurveyListViewModel>>(
+                surveys.OrderByDescending(s => s.CreatedDate)
             );
-
-            var surveyEntity = survey.FirstOrDefault();
-            if (surveyEntity == null)
-                return NotFound();
-
-            foreach (var question in surveyEntity.Questions)
-            {
-                var options = await _unitOfWork.Options.GetWhereAsync(o => o.QuestionId == question.Id);
-                question.Options = options.ToList();
-            }
-
-            var responses = await _unitOfWork.Responses.GetWhereWithIncludesAsync(
-                r => r.SurveyId == id,
-                r => r.Answers,
-                r => r.User
-            );
-
-            foreach (var response in responses)
-            {
-                foreach (var answer in response.Answers)
-                {
-                    var question = surveyEntity.Questions.FirstOrDefault(q => q.Id == answer.QuestionId);
-                    if (question != null)
-                    {
-                        answer.Question = question;
-                        if (answer.OptionId.HasValue)
-                        {
-                            answer.Option = question.Options?.FirstOrDefault(o => o.Id == answer.OptionId.Value);
-                        }
-                    }
-                }
-            }
-
-            var viewModel = _mapper.Map<SurveyDetailViewModel>(surveyEntity);
-            ViewBag.Responses = _mapper.Map<List<ResponseDetailViewModel>>(responses.ToList());
-            ViewBag.ResponseCount = responses.Count();
 
             return View(viewModel);
         }
 
-        // POST: Admin/DeleteSurvey/5
-        [HttpPost]
-        public async Task<IActionResult> DeleteSurvey(int id)
-        {
-            try
-            {
-                var survey = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
-                    s => s.Id == id,
-                    s => s.Questions,
-                    s => s.Responses
-                );
-
-                var surveyEntity = survey.FirstOrDefault();
-                if (surveyEntity == null)
-                    return Json(new { success = false, message = "Anket bulunamadı" });
-
-                foreach (var question in surveyEntity.Questions)
-                {
-                    var options = await _unitOfWork.Options.GetWhereAsync(o => o.QuestionId == question.Id);
-                    question.Options = options.ToList();
-                }
-
-                foreach (var response in surveyEntity.Responses)
-                {
-                    var answers = await _unitOfWork.Answers.GetWhereAsync(a => a.ResponseId == response.Id);
-                    response.Answers = answers.ToList();
-                }
-
-                _unitOfWork.Answers.DeleteRange(surveyEntity.Responses.SelectMany(r => r.Answers));
-                _unitOfWork.Options.DeleteRange(surveyEntity.Questions.SelectMany(q => q.Options));
-                _unitOfWork.Questions.DeleteRange(surveyEntity.Questions);
-                _unitOfWork.Responses.DeleteRange(surveyEntity.Responses);
-                _unitOfWork.Surveys.Delete(surveyEntity);
-
-                await _unitOfWork.SaveChangesAsync();
-
-                return Json(new { success = true, message = "Anket silindi" });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Hata: " + ex.Message });
-            }
-        }
-
-        // POST: Admin/ToggleUserStatus/5
-        [HttpPost]
-        public async Task<IActionResult> ToggleUserStatus(int id)
-        {
-            try
-            {
-                var user = await _userRepository.GetByIdAsync(id);
-                if (user == null)
-                    return Json(new { success = false, message = "Kullanıcı bulunamadı" });
-
-                user.IsActive = !user.IsActive;
-
-                // ✅ UserManager kullanarak güncelle
-                var result = await _userManager.UpdateAsync(user);
-
-                if (!result.Succeeded)
-                {
-                    return Json(new { success = false, message = "Güncelleme başarısız" });
-                }
-
-                return Json(new { success = true, isActive = user.IsActive });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
-        }
-
-        // GET: Admin/Statistics
+        // ---------------- STATISTICS ----------------
         public async Task<IActionResult> Statistics()
         {
             var surveys = await _unitOfWork.Surveys.GetWhereWithIncludesAsync(
@@ -215,11 +129,23 @@ namespace SurveyApp.Controllers
                 TotalResponses = surveys.Sum(s => s.Responses.Count),
                 TotalUsers = users.Count(),
                 ActiveUsers = users.Count(u => u.IsActive),
-                SurveysCreatedThisMonth = surveys.Count(s => s.CreatedDate.Month == DateTime.Now.Month && s.CreatedDate.Year == DateTime.Now.Year),
-                ResponsesThisMonth = surveys.SelectMany(s => s.Responses).Count(r => r.CreatedAt.Month == DateTime.Now.Month && r.CreatedAt.Year == DateTime.Now.Year)
+                SurveysCreatedThisMonth = surveys.Count(s =>
+                    s.CreatedDate.Month == DateTime.Now.Month &&
+                    s.CreatedDate.Year == DateTime.Now.Year),
+                ResponsesThisMonth = surveys
+                    .SelectMany(s => s.Responses)
+                    .Count(r =>
+                        r.CreatedAt.Month == DateTime.Now.Month &&
+                        r.CreatedAt.Year == DateTime.Now.Year)
             };
 
             return View(stats);
         }
+    }
+
+    // 🔹 JSON Request DTO
+    public class ToggleUserRoleRequest
+    {
+        public int UserId { get; set; }
     }
 }

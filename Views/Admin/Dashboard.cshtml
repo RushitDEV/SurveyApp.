@@ -3,83 +3,291 @@
     ViewData["Title"] = "Admin Paneli";
 }
 
-<div class="container-fluid p-0 bg-light min-vh-100">
-    <!-- Header -->
-    <div class="bg-gradient text-white py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center">
+<div class="container-fluid p-0 min-vh-100" style="background: #f0f2f5;">
+    <!-- Modern Header with Navigation -->
+    <div class="admin-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container-fluid px-4 py-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h2 class="mb-0 fw-bold">
+                    <h2 class="mb-1 fw-bold text-white">
                         <i class="bi bi-speedometer2 me-2"></i>Admin Paneli
                     </h2>
-                    <p class="mb-0 opacity-75">Sistem geneli yönetim ve istatistikler</p>
+                    <p class="mb-0 text-white-50">Sistem geneli yönetim ve istatistikler</p>
                 </div>
                 <!-- SignalR durum -->
-                <div id="connectionStatus" class="badge bg-danger">
+                <div id="connectionStatus" class="badge bg-danger px-3 py-2">
                     <i class="bi bi-wifi-off me-1"></i>Bağlantı bekleniyor...
                 </div>
+            </div>
+
+            <!-- Navigation Menu -->
+            <div class="navigation-menu">
+                <a href="/Admin/Dashboard" class="nav-item active">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/Admin/Users" class="nav-item">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Kullanıcılar</span>
+                </a>
+                <a href="/Admin/Surveys" class="nav-item">
+                    <i class="bi bi-clipboard-data"></i>
+                    <span>Anketler</span>
+                </a>
+                <a href="/Admin/Statistics" class="nav-item">
+                    <i class="bi bi-graph-up"></i>
+                    <span>İstatistikler</span>
+                </a>
             </div>
         </div>
     </div>
 
     <!-- Bildirim Alanı -->
-    <div class="container mt-3">
+    <div class="container-fluid px-4 mt-3">
         <div id="notificationArea"></div>
     </div>
 
-    <div class="container py-5">
-        <!-- İstatistik Kartları (mevcut kodunuz) -->
-        <div class="row g-4 mb-5">
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center p-4">
-                        <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex p-3 mb-3">
-                            <i class="bi bi-people fs-1 text-primary"></i>
-                        </div>
-                        <h3 class="fw-bold mb-1">@Model.TotalUsers</h3>
-                        <p class="text-muted mb-0">Toplam Kullanıcı</p>
+    <div class="container-fluid px-4 py-4">
+        <!-- İstatistik Kartları -->
+        <div class="row g-4 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card stat-card-users">
+                    <div class="stat-icon">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@Model.TotalUsers</div>
+                        <div class="stat-label">Toplam Kullanıcı</div>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="bi bi-arrow-up"></i> 12%
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center p-4">
-                        <div class="rounded-circle bg-success bg-opacity-10 d-inline-flex p-3 mb-3">
-                            <i class="bi bi-clipboard-data fs-1 text-success"></i>
-                        </div>
-                        <h3 class="fw-bold mb-1">@Model.TotalSurveys</h3>
-                        <p class="text-muted mb-0">Toplam Anket</p>
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card stat-card-surveys">
+                    <div class="stat-icon">
+                        <i class="bi bi-clipboard-data"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@Model.TotalSurveys</div>
+                        <div class="stat-label">Toplam Anket</div>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="bi bi-arrow-up"></i> 8%
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center p-4">
-                        <div class="rounded-circle bg-info bg-opacity-10 d-inline-flex p-3 mb-3">
-                            <i class="bi bi-check-circle fs-1 text-info"></i>
-                        </div>
-                        <h3 class="fw-bold mb-1">@Model.ActiveSurveys</h3>
-                        <p class="text-muted mb-0">Aktif Anket</p>
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card stat-card-active">
+                    <div class="stat-icon">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@Model.ActiveSurveys</div>
+                        <div class="stat-label">Aktif Anket</div>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="bi bi-dash"></i> 0%
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center p-4">
-                        <div class="rounded-circle bg-warning bg-opacity-10 d-inline-flex p-3 mb-3">
-                            <i class="bi bi-chat-left-text fs-1 text-warning"></i>
-                        </div>
-                        <h3 class="fw-bold mb-1" id="totalResponses">@Model.TotalResponses</h3>
-                        <p class="text-muted mb-0">Toplam Yanıt</p>
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card stat-card-responses">
+                    <div class="stat-icon">
+                        <i class="bi bi-chat-left-text-fill"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="totalResponses">@Model.TotalResponses</div>
+                        <div class="stat-label">Toplam Yanıt</div>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="bi bi-arrow-up"></i> 24%
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Diğer içerik (Son Anketler vb.) buraya gelecek -->
+        <!-- Quick Actions -->
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="bi bi-lightning-charge-fill text-warning me-2"></i>
+                            Hızlı İşlemler
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <a href="/Admin/Users" class="quick-action-btn">
+                                    <div class="quick-action-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                        <i class="bi bi-people-fill"></i>
+                                    </div>
+                                    <div class="quick-action-content">
+                                        <div class="quick-action-title">Kullanıcı Yönetimi</div>
+                                        <div class="quick-action-desc">Kullanıcıları görüntüle ve düzenle</div>
+                                    </div>
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="/Admin/Surveys" class="quick-action-btn">
+                                    <div class="quick-action-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                        <i class="bi bi-clipboard-data"></i>
+                                    </div>
+                                    <div class="quick-action-content">
+                                        <div class="quick-action-title">Anket Yönetimi</div>
+                                        <div class="quick-action-desc">Anketleri görüntüle ve yönet</div>
+                                    </div>
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="/Admin/Statistics" class="quick-action-btn">
+                                    <div class="quick-action-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                        <i class="bi bi-graph-up"></i>
+                                    </div>
+                                    <div class="quick-action-content">
+                                        <div class="quick-action-title">İstatistikler</div>
+                                        <div class="quick-action-desc">Detaylı raporları incele</div>
+                                    </div>
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="/Survey/Create" class="quick-action-btn">
+                                    <div class="quick-action-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                                        <i class="bi bi-plus-circle-fill"></i>
+                                    </div>
+                                    <div class="quick-action-content">
+                                        <div class="quick-action-title">Yeni Anket</div>
+                                        <div class="quick-action-desc">Yeni anket oluştur</div>
+                                    </div>
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Son Anketler & Son Kullanıcılar -->
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">
+                                <i class="bi bi-clock-history me-2 text-primary"></i>
+                                Son Anketler
+                            </h5>
+                            <a href="/Admin/Surveys" class="btn btn-sm btn-outline-primary">
+                                Tümünü Gör <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                        @if (Model.RecentSurveys != null && Model.RecentSurveys.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Anket Adı</th>
+                                            <th class="text-center">Durum</th>
+                                            <th class="text-center">Yanıt</th>
+                                            <th>Tarih</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var survey in Model.RecentSurveys)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <i class="bi bi-file-earmark-text text-primary"></i>
+                                                        <span class="fw-semibold">@survey.Title</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    @if (survey.IsActive)
+                                                    {
+                                                        <span class="badge bg-success">Aktif</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary">Pasif</span>
+                                                    }
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-info">@survey.ResponseCount</span>
+                                                </td>
+                                                <td>
+                                                    <small class="text-muted">@survey.CreatedDate.ToString("dd.MM.yyyy")</small>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                                Henüz anket bulunmuyor
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">
+                                <i class="bi bi-person-plus me-2 text-success"></i>
+                                Yeni Kullanıcılar
+                            </h5>
+                            <a href="/Admin/Users" class="btn btn-sm btn-outline-success">
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                        @if (Model.RecentUsers != null && Model.RecentUsers.Any())
+                        {
+                            <div class="recent-users-list">
+                                @foreach (var user in Model.RecentUsers)
+                                {
+                                    <div class="recent-user-item">
+                                        <div class="user-avatar-small">
+                                            <i class="bi bi-person-circle"></i>
+                                        </div>
+                                        <div class="user-info">
+                                            <div class="fw-semibold">@user.UserName</div>
+                                            <small class="text-muted">@user.CreatedAt.ToString("dd.MM.yyyy")</small>
+                                        </div>
+                                        @if (user.IsActive)
+                                        {
+                                            <span class="status-dot-active"></span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-4 text-muted">
+                                <i class="bi bi-person-x display-6 d-block mb-2"></i>
+                                <small>Yeni kullanıcı yok</small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -94,15 +302,13 @@
         .configureLogging(signalR.LogLevel.Information)
         .build();
 
-    // Bağlantı durumu göstergesi
     const statusBadge = document.getElementById('connectionStatus');
 
     function updateConnectionStatus(status, message) {
-        statusBadge.className = `badge bg-${status}`;
+        statusBadge.className = `badge bg-${status} px-3 py-2`;
         statusBadge.innerHTML = message;
     }
 
-    // Bağlantı başarılı
     connection.start()
         .then(() => {
             console.log('✅ SignalR bağlantısı başarılı!');
@@ -113,7 +319,6 @@
             updateConnectionStatus('danger', '<i class="bi bi-wifi-off me-1"></i>Bağlantı hatası');
         });
 
-    // Yeniden bağlanma olayları
     connection.onreconnecting(() => {
         updateConnectionStatus('warning', '<i class="bi bi-arrow-clockwise me-1"></i>Yeniden bağlanıyor...');
     });
@@ -128,31 +333,24 @@
         showNotification('danger', 'SignalR bağlantısı kesildi');
     });
 
-    // ✅ Yeni yanıt bildirimi al
     connection.on("ReceiveNewResponse", function (data) {
         console.log('📩 Yeni yanıt bildirimi:', data);
 
-        // İstatistiği güncelle
         const totalResponsesEl = document.getElementById('totalResponses');
         if (totalResponsesEl) {
             totalResponsesEl.textContent = parseInt(totalResponsesEl.textContent) + 1;
-
-            // Animasyon
-            totalResponsesEl.classList.add('text-success');
-            setTimeout(() => totalResponsesEl.classList.remove('text-success'), 1000);
+            totalResponsesEl.classList.add('pulse-animation');
+            setTimeout(() => totalResponsesEl.classList.remove('pulse-animation'), 1000);
         }
 
-        // Bildirim göster
         showNotification('info', `
             <strong>${data.surveyTitle}</strong> anketine yeni yanıt geldi!<br>
             <small>Toplam ${data.responseCount} yanıt</small>
         `);
 
-        // Toast bildirimi
         showToast('Yeni Yanıt!', `${data.surveyTitle} - ${data.responseCount} yanıt`);
     });
 
-    // Bildirim gösterme fonksiyonu
     function showNotification(type, message) {
         const notificationArea = document.getElementById('notificationArea');
         const alert = document.createElement('div');
@@ -163,16 +361,13 @@
         `;
         notificationArea.appendChild(alert);
 
-        // 5 saniye sonra otomatik kaldır
         setTimeout(() => {
             alert.classList.remove('show');
             setTimeout(() => alert.remove(), 150);
         }, 5000);
     }
 
-    // Toast bildirimi
     function showToast(title, message) {
-        // Bootstrap Toast varsa kullan
         const toastHtml = `
             <div class="toast-container position-fixed bottom-0 end-0 p-3">
                 <div class="toast" role="alert">
@@ -194,35 +389,290 @@
         const toast = new bootstrap.Toast(toastEl);
         toast.show();
 
-        // Toast kapandıktan sonra DOM'dan kaldır
         toastEl.addEventListener('hidden.bs.toast', () => toastEl.parentElement.remove());
     }
 </script>
 
 <style>
+    /* Admin Header */
+    .admin-header {
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Navigation Menu */
+    .navigation-menu {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+        .navigation-menu .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+
+            .navigation-menu .nav-item:hover {
+                background: rgba(255, 255, 255, 0.2);
+                transform: translateY(-2px);
+            }
+
+            .navigation-menu .nav-item.active {
+                background: white;
+                color: #667eea;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            }
+
+            .navigation-menu .nav-item i {
+                font-size: 1.2rem;
+            }
+
+    /* Stat Cards */
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+    .stat-card-users::before {
+        background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+
+    .stat-card-surveys::before {
+        background: linear-gradient(90deg, #f093fb, #f5576c);
+    }
+
+    .stat-card-active::before {
+        background: linear-gradient(90deg, #4facfe, #00f2fe);
+    }
+
+    .stat-card-responses::before {
+        background: linear-gradient(90deg, #43e97b, #38f9d7);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-card-users .stat-icon {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+
+    .stat-card-surveys .stat-icon {
+        background: linear-gradient(135deg, #f093fb, #f5576c);
+        color: white;
+    }
+
+    .stat-card-active .stat-icon {
+        background: linear-gradient(135deg, #4facfe, #00f2fe);
+        color: white;
+    }
+
+    .stat-card-responses .stat-icon {
+        background: linear-gradient(135deg, #43e97b, #38f9d7);
+        color: white;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: #718096;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .stat-trend {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        background: #f0fff4;
+        color: #38a169;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* Quick Actions */
+    .quick-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        text-decoration: none;
+        color: #2d3748;
+        transition: all 0.3s ease;
+    }
+
+        .quick-action-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+            color: #2d3748;
+        }
+
+    .quick-action-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .quick-action-content {
+        flex: 1;
+    }
+
+    .quick-action-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .quick-action-desc {
+        font-size: 0.8rem;
+        color: #718096;
+    }
+
+    .quick-action-btn > i {
+        color: #cbd5e0;
+        font-size: 1.2rem;
+    }
+
+    /* Recent Users */
+    .recent-users-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .recent-user-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: #f7fafc;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+
+        .recent-user-item:hover {
+            background: #edf2f7;
+        }
+
+    .user-avatar-small {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .user-info {
+        flex: 1;
+    }
+
+    .status-dot-active {
+        width: 10px;
+        height: 10px;
+        background: #48bb78;
+        border-radius: 50%;
+        animation: pulse-dot 2s infinite;
+    }
+
+    @@keyframes pulse-dot {
+        0%, 100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+    }
+
     @@keyframes pulse {
-        0%, 100%
+        0%, 100% {
+            transform: scale(1);
+        }
 
-    {
-        transform: scale(1);
+        50% {
+            transform: scale(1.1);
+        }
     }
 
-    50% {
-        transform: scale(1.1);
-    }
-
-    }
-
-    .text-success {
+    .pulse-animation {
         animation: pulse 0.5s ease-in-out;
     }
 
-    #connectionStatus {
-        font-size: 0.875rem;
-        padding: 0.5rem 1rem;
-    }
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .navigation-menu {
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
 
-    .toast {
-        min-width: 300px;
+            .navigation-menu .nav-item span {
+                display: none;
+            }
+
+        .stat-value {
+            font-size: 1.5rem;
+        }
+
+        .quick-action-desc {
+            display: none;
+        }
     }
 </style>
